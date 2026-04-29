@@ -284,12 +284,13 @@ Not applicable — no peer content.
 
 - **Class:** read-only.
 - **Wire mapping:** [`state.query`](../../protocol/SPEC.md#72-statequery-request--response).
-- **Description.** Returns a snapshot of awareness state at the requested scope. Used for "who else is on this repo?" lookups.
+- **Description.** Returns a snapshot of awareness state at the requested scope. Used for "who else is on this repo?" lookups. Synthesized prose by default per §3.10.3.
 
 #### Input
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
+| `format` | string | no | `"summary"` (default) or `"structured"`. See §3.10.3. |
 | `branches` | string[] | no | Empty/absent → all branches in the agent's repo. |
 | `developers` | string[] | no | Empty/absent → all team members. |
 | `since` | timestamp | no | RFC 3339 UTC. Returns only records updated at or after. |
@@ -297,6 +298,10 @@ Not applicable — no peer content.
 The daemon fills in `repo` from the session.
 
 #### Output
+
+When `format == "summary"` (default): a `summary: string` field with daemon-synthesized prose plus `record_count: int`. Bounded ≤ 600 tokens; truncated with a hint if exceeded.
+
+When `format == "structured"`:
 
 | Field | Type | Notes |
 |---|---|---|
@@ -306,7 +311,7 @@ The daemon fills in `repo` from the session.
 
 #### Sandboxing
 
-`output.sandboxing.peer_content_fields = ["records[].intent"]`. Adapters MUST surface peer intent strings in a UI element (panel, hover, notification), never in the agent's prompt.
+`output.sandboxing.peer_content_fields = ["summary", "records[].intent"]`. Adapters MUST surface peer intent strings in a UI element (panel, hover, notification), never in the agent's prompt.
 
 ### 4.3 `tap_peers_on_file`
 
@@ -319,8 +324,13 @@ The daemon fills in `repo` from the session.
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `file` | string | yes | Path within the worktree, per `#FilePath`. |
+| `format` | string | no | `"summary"` (default) or `"structured"`. |
 
 #### Output
+
+When `format == "summary"`: a `summary: string` plus `peer_count: int`. Bounded ≤ 200 tokens.
+
+When `format == "structured"`:
 
 | Field | Type | Notes |
 |---|---|---|
@@ -329,13 +339,13 @@ The daemon fills in `repo` from the session.
 
 #### Sandboxing
 
-`peer_content_fields = ["peers[].intent"]`.
+`peer_content_fields = ["summary", "peers[].intent"]`.
 
 ### 4.4 `tap_conflict_check`
 
 - **Class:** read-only.
 - **Wire mapping:** [`conflict.check`](../../protocol/SPEC.md#81-conflictcheck-request--response).
-- **Description.** **The critical hot path.** Called from the adapter's `PreToolUse` hook before any write. Returns conflict reports at the highest level reached within the latency budget. Sub-50 ms from local cache; sub-100 ms end-to-end per [`../../project-context.md` §3.3](../../project-context.md#33-service-level-objectives).
+- **Description.** **The critical hot path.** Called from the adapter's `PreToolUse` hook before any write. Returns conflict reports at the highest level reached within the latency budget. Sub-50 ms from local cache; sub-100 ms end-to-end per [`../../project-context.md` §3.3](../../project-context.md#33-service-level-objectives). Highest-frequency tool in the system; payload is minimal in the no-conflict case (§3.10.4).
 
 #### Input
 
@@ -345,12 +355,25 @@ The daemon fills in `repo` from the session.
 
 #### Output
 
+**No-conflict case (the common path):**
+
+```json
+{ "ok": true }
+```
+
+Four tokens. The agent reads this as "proceed" and moves on. No structured payload.
+
+**Conflict case:**
+
 | Field | Type | Notes |
 |---|---|---|
+| `ok` | bool | Always `false` in this case. |
 | `level_reached` | int | 1, 2, 3, or 4. |
 | `partial` | bool | True if higher levels timed out. |
-| `conflicts` | object[] | `#ConflictReport[]`. May be empty. |
+| `conflicts` | object[] | `#ConflictReport[]`. At least one. |
 | `checked_at` | timestamp | |
+
+The conflict-case payload is the only TAP tool result NOT tagged `compactable: true` (§3.10.7). It stays in the agent's context until the conflict is acted on, since dropping it would let the agent retry the blocked write without re-grounding.
 
 #### Sandboxing
 
@@ -358,7 +381,7 @@ The daemon fills in `repo` from the session.
 
 #### Hook posture
 
-Adapters MUST call this in `PreToolUse` for every write tool the agent invokes. A non-empty `conflicts` array SHOULD block the underlying write and surface the conflict to the developer; details in `rfcs/0030-claude-code-adapter.md`.
+Adapters MUST call this in `PreToolUse` for every write tool the agent invokes. A non-empty `conflicts` array (or `ok: false`) SHOULD block the underlying write and surface the conflict to the developer; details in `rfcs/0030-claude-code-adapter.md`.
 
 ### 4.5 `tap_conflict_declare`
 
