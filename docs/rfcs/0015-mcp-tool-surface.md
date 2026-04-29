@@ -500,3 +500,145 @@ Phase 4 introduces messaging, consults, tasks, trust, and approval gates. The to
 All Phase 4 tools that surface peer content (every consult and message tool) carry a non-empty `peer_content_fields` array. Phase 4's adapter conformance tests verify the sandboxing rule against this surface; v0.1 adapters do not implement these tools and simply do not register them.
 
 Adding the Phase 4 surface is a MINOR tool-surface bump (1.0.x → 1.1.0). v1.0 adapters continue to function against a v1.1 daemon; they see only the v1.0 tools.
+
+---
+
+## 7. Alternatives considered
+
+### 7.1 Expose the wire protocol directly
+
+**Alternative.** Have agents speak TAP wire format (`agent.register`, `state.announce`, etc.) over the local socket, removing the MCP-tool intermediary.
+
+**Rejected because.** MCP is the editor-side ecosystem standard; expecting every editor's agent harness to speak a second protocol over a second socket doubles integration cost. The MCP tool surface adds one indirection but lets every MCP-speaking editor integrate without bespoke transport code. The cost — translating between MCP tool calls and TAP wire frames inside the daemon — is small and contained.
+
+### 7.2 One mega-tool with a `method` argument
+
+**Alternative.** A single `tap` tool whose `method` argument selects the operation, mirroring the wire protocol's `method` field.
+
+**Rejected because.** Loses MCP's per-tool schema validation, per-tool descriptions, and per-tool side-effect classification. Editor UIs that surface tool calls (Claude Code's tool-use blocks, Cursor's command palette) work tool-by-tool; collapsing the surface would degrade those UIs and harm developer trust.
+
+### 7.3 Per-call authentication
+
+**Alternative.** Require an auth header on every MCP tool call (e.g., a per-call token derived from the agent's session token).
+
+**Rejected because.** The MCP transport is a process-local Unix socket / named pipe. Trust is established by socket permissions and UID verification (§3.2). Per-call auth adds latency to a hot-path tool (`tap_conflict_check` is on every write) without a credible threat model justifying it.
+
+### 7.4 Push notifications via MCP server-sent events
+
+**Alternative.** The daemon pushes `conflict.notify` content directly to the agent via MCP server-initiated messages, bypassing `tap_conflicts_pending`.
+
+**Deferred, not rejected.** MCP's server-initiated message support is uneven across editors as of Phase 1; relying on it would constrain adapter compatibility. The `tap_conflicts_pending` poll model works on every MCP-speaking editor and can be augmented with push later under a MINOR tool-surface bump.
+
+### 7.5 Tool-surface versioning bound to wire-protocol versioning
+
+**Alternative.** Bump the tool-surface major version whenever the wire protocol's major version bumps.
+
+**Rejected because.** The two surfaces evolve at different rates. The wire protocol may stabilize at v1.0 well before the tool surface does, and adapter authors should not be forced to handle protocol churn that the daemon already absorbs.
+
+---
+
+## 8. Drawbacks
+
+- **Indirection cost.** Every MCP tool call traverses one extra layer (adapter → daemon MCP server → daemon subsystems) compared to "agent calls daemon subsystems directly." For the hot-path `tap_conflict_check`, this is mitigated by the local cache; for cold-path tools the overhead is irrelevant.
+- **Two contracts to keep in sync.** Wire-protocol schemas in `protocol/schemas/` and MCP tool schemas in the daemon's MCP server. The mapping is mechanical and codegen-driven, but every wire-format change has to flow through to the tool surface as well.
+- **Editor-specific edge cases leak in via adapters.** Even though the tool surface itself is editor-agnostic, every adapter `INTERFACES.md` will document its own quirks (Claude Code's hook payload format, Cursor's MCP discovery UX). The discipline of keeping editor specifics in adapters is a continuing cost.
+- **Sandboxing contract is not directly enforceable.** §3.7 specifies what adapters MUST do with `peer_content_fields`. CI cannot prove that an editor's agent harness routes the field correctly; the conformance tests that verify it (Phase 2 for Claude Code, Phase 5 for the rest) are necessarily empirical. A buggy adapter is a critical security regression.
+
+---
+
+## 9. Migration / compatibility
+
+This RFC introduces v1.0.0 of the tool surface. There is no prior version to migrate from.
+
+Forward-compatibility commitments under this RFC:
+
+- Tool names listed in §4–§5 are stable. Renames require a MAJOR tool-surface bump.
+- Adding new tools (including the Phase 4 surface in §6) is MINOR.
+- Adding new optional input or output fields to existing tools is MINOR.
+- Tightening an input constraint (e.g., shrinking a max length) is MAJOR.
+- Loosening an input constraint is MINOR.
+- The `peer_content_fields` declaration on a tool is part of the tool's contract; removing a field from this list (i.e., declaring previously-sandboxed content to no longer require sandboxing) is MAJOR. Adding a field is MINOR.
+
+The compatibility contract between adapter, daemon, and wire protocol is then:
+
+- **Adapter ↔ daemon:** controlled by the tool-surface version (§3.9).
+- **Daemon ↔ relay:** controlled by the wire-protocol version per [`../VERSIONING.md`](../VERSIONING.md).
+- **Adapter and wire protocol** are not directly coupled; the adapter never reads or writes wire frames.
+
+---
+
+## 10. Security considerations
+
+### 10.1 Threats this introduces
+
+- **Local-IPC spoofing.** A malicious process under the developer's UID could connect to the daemon socket and impersonate the agent. Mitigated by §3.2 socket permissions and UID verification, plus the broader "compromised user account compromises both" trust statement in [`../THREAT_MODEL.md`](../THREAT_MODEL.md) §2.
+- **Adapter as injection vector.** An adapter that violates the §3.7 sandboxing contract routes peer-controlled content into the agent's prompt — a Critical-severity finding under risk SR-001 in [`../RISK_REGISTER.md`](../RISK_REGISTER.md). Mitigated by adapter conformance tests (Phase 2/5) and by the explicit `peer_content_fields` declaration making the sandboxing requirement legible to adapter authors.
+- **Tool-call abuse via prompt injection.** A peer-injected prompt that nudges the agent to call `tap_conflict_declare` with a long TTL on many files could create a denial-of-service against the team. Mitigated by `ttl_seconds` bounded to 3600 (`#TtlSeconds`), the rate limits in [`../../project-context.md` §4.3](../../project-context.md#43-configuration), and per-developer policy.
+
+### 10.2 Threats this mitigates
+
+- The sandboxing contract is the operationalization of [`../THREAT_MODEL.md`](../THREAT_MODEL.md) §5 at the editor boundary. It does not remove the underlying threat (a malicious peer can still send content that **could** be injected), but it provides a concrete, auditable contract that adapters either satisfy or do not, and it makes the threat localizable to a small adapter codebase.
+
+### 10.3 Threats this does not address
+
+- **Compromised editor.** A compromised editor process can ignore every contract this RFC specifies. The tool surface assumes an honest editor and cooperative adapter; defending against a malicious editor is out of scope and not solvable at the protocol layer.
+- **Data exfiltration via legitimate tool calls.** A peer-injected prompt that nudges the agent to call `tap_state_query` and then exfiltrate the result via the editor's other tools (file write, network) is mitigated only by the agent's own egress controls, not by TAP. The non-goal in [`../../project-context.md` §1.4](../../project-context.md#14-non-goals) ("not a single-developer orchestrator") is explicit.
+
+### 10.4 STRIDE delta
+
+This is the per-RFC STRIDE delta required by [`../RFC_PROCESS.md`](../RFC_PROCESS.md) §3.3. The phase-level addendum (Phase 2's `threat-model.md`) folds these in.
+
+| Category | Threat | Control |
+|---|---|---|
+| Spoofing | Foreign-UID process connects to socket. | UID check + `0700` permissions. |
+| Tampering | Adapter alters wire content before forwarding. | Daemon validates inputs against the wire-protocol schema; outputs are validated by the daemon before reply. |
+| Repudiation | Agent denies invoking a state-mutating tool. | Daemon logs every tool call with trace ID propagated to the wire protocol; audit chain (Phase 4) captures the upstream wire frame. |
+| Information disclosure | Sandboxing contract violated by adapter. | `peer_content_fields` declaration + adapter conformance tests. |
+| Denial of service | Pathological tool call rate. | Per-tool rate limits (Phase 2 daemon RFC). |
+| Elevation of privilege | Tool that should be `state_mutating` classified as `read_only`, bypassing hook gates. | Side-effect class is part of the tool descriptor; CI verifies `class` against the wire-protocol method's effect. |
+
+---
+
+## 11. Unresolved questions
+
+### Q-15-001 — Server-initiated messages from the daemon
+
+The pull-based `tap_conflicts_pending` works everywhere but adds latency. Push-based delivery (§7.4) would let conflict notifications arrive at the agent immediately. Decide before Phase 4 whether to add a push channel and which editors support it.
+
+### Q-15-002 — `tap_conflicts_ack`
+
+§4.7 mentions an acknowledgement tool the agent could call to mark notifications handled. Phase 1 punts on this; v1.0 just clears notifications after they are read once. If multi-agent-per-developer becomes common (likely Phase 5), the ack model needs a real design.
+
+### Q-15-003 — Tool-call rate limits
+
+§10.4 references rate limits but the limits themselves are not specified. The Phase 2 daemon policy-engine RFC (`rfcs/0017-policy-engine.md`) sets default values; this RFC's role is to require their existence.
+
+### Q-15-004 — `tap_recent_activity` retention
+
+§5.4 caps at 100 events / 5 minutes. Adapters that surface the activity panel asynchronously may want a longer history. Defer to Phase 5 dashboard work; v1.0 retention is sufficient for hot-path use cases.
+
+### Q-15-005 — Schema canonicalization at the MCP layer
+
+`SPEC_STYLE.md` §7 mandates round-trip fixtures for wire schemas; whether the MCP tool surface needs an analogous round-trip guarantee is open. Phase 1 follow-up RFC (Q-1-001 in `phases/phase-1/open-questions.md`) addresses canonicalization at the wire layer; the tool surface inherits whatever is decided there.
+
+---
+
+## 12. Future work
+
+- A `tap_consult_*` family added under §6 in Phase 4.
+- A push-notification channel (Q-15-001).
+- Adapter-side conformance tests scaling to a generic MCP adapter at Phase 5.
+- A capability-negotiation handshake between adapter and daemon, letting per-editor adapters opt out of tools the editor cannot meaningfully expose.
+
+---
+
+## 13. References
+
+- [`../../protocol/SPEC.md`](../../protocol/SPEC.md) — wire-format spec (every tool maps to a wire method or local-cache aggregation).
+- [`../../protocol/schemas/`](../../protocol/schemas/) — CUE schemas the tool input/output schemas derive from.
+- [`../THREAT_MODEL.md`](../THREAT_MODEL.md) §5 — the sandboxing rule operationalized in §3.7.
+- [`../VERSIONING.md`](../VERSIONING.md) — applied to the tool-surface version per §3.9.
+- [`../SPEC_STYLE.md`](../SPEC_STYLE.md) — naming conventions inherited.
+- [`../CONFORMANCE.md`](../CONFORMANCE.md) §2 — implementation classes; "Adapter" class consumes this RFC.
+- [`../RISK_REGISTER.md`](../RISK_REGISTER.md) — risks SR-001 (sandboxing) and TR-005 (MCP evolution) are most relevant.
+- Phase 2 follow-on RFCs (`0010`–`0099`): `0010-daemon-architecture.md`, `0014-mcp-server.md`, `0017-policy-engine.md`, `0030-claude-code-adapter.md` — consume this contract.
