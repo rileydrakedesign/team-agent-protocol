@@ -1,0 +1,33 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.announce rejects inverted hunk range",
+  "description": "A hunk's end_line MUST be >= start_line. Inverted ranges are a schema error.",
+  "schema_ref": "state_announce#StateAnnounce",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.announce",
+    "params": {
+      "repo": "https://github.com/tap-dev/tap.git",
+      "sequence": 1,
+      "record": {
+        "developer_id": "rileydrake",
+        "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "branch": "main",
+        "worktree": "/Users/rileydrake/dev/tap",
+        "dirty_files": [
+          {
+            "file": "src/auth/oauth.rs",
+            "hunks": [
+              { "start_line": 100, "end_line": 50, "op": "modify" }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Inverted ranges would let a misbehaving daemon over-claim conflict surface; the schema rejects them at parse."
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "sandboxing rejects ASCII control character in intent",
+  "description": "Schema rejects U+007F (DEL) and other ASCII control characters in intent. Zero-width Unicode characters (e.g., U+200B) are not constrained by the intent regex but the matching ASCII-control regex catches the most common smuggling chars.",
+  "schema_ref": "agent_heartbeat#AgentHeartbeat",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.heartbeat",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "branch": "main",
+      "dirty_file_count": 0,
+      "intent": "harmlesspayload",
+      "sequence": 1
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Pattern: ASCII control-character smuggling. THREAT_MODEL §5.3 'smuggled control tokens'. Note: zero-width Unicode characters are a Phase 4 follow-up; the v0.1 intent regex permits them so they can flow through to UI defenses."
+}

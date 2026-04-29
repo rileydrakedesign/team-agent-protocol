@@ -1,0 +1,22 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.heartbeat valid notification",
+  "description": "A well-formed agent.heartbeat notification with optional intent populated.",
+  "schema_ref": "agent_heartbeat#AgentHeartbeat",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.heartbeat",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "branch": "feature/auth-refactor",
+      "dirty_file_count": 7,
+      "intent": "extracting OAuth flow into its own module",
+      "sequence": 42
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.disconnect valid version_unsupported",
+  "description": "Server-initiated disconnect with reason version_unsupported and an ASCII detail string.",
+  "schema_ref": "agent_disconnect#AgentDisconnect",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.disconnect",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "reason": "version_unsupported",
+      "detail": "client tap_version 0.0.9 is below relay minimum 0.1.0"
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

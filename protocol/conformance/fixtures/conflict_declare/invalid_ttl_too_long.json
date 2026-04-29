@@ -1,0 +1,24 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.declare rejects ttl > 3600",
+  "description": "ttl_seconds is bounded to one hour; longer TTLs would let abandoned declarations persist indefinitely.",
+  "schema_ref": "conflict_declare#ConflictDeclareRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-402",
+    "method": "conflict.declare",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "main",
+      "targets": [{ "file": "README.md" }],
+      "ttl_seconds": 86400
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Re-declare to extend rather than carrying a 24-hour lock."
+}

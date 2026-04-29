@@ -1,0 +1,35 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "sandboxing rejects right-to-left override in conflict message",
+  "description": "Schema rejects U+202E (RTL override) in conflict.notify.conflicts[].message. The message field is constrained to printable ASCII (0x20-0x7e); Unicode formatting characters fall outside that set.",
+  "schema_ref": "conflict_notify#ConflictNotify",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "conflict.notify",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "main",
+      "detected_at": "2026-04-29T17:50:00Z",
+      "conflicts": [
+        {
+          "level": 1,
+          "file": "src/auth/oauth.rs",
+          "with": {
+            "developer_id": "samchen",
+            "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+            "branch": "feature/oauth-cleanup"
+          },
+          "confidence": 1.0,
+          "message": "innocent‮message"
+        }
+      ]
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Pattern: bidirectional-rendering smuggling. Defended at the schema layer because conflict.notify.message is constrained to printable ASCII."
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.check valid response no conflicts",
+  "description": "Response with an empty conflicts list. level_reached=1 indicates only Level 1 ran (e.g., higher levels not yet available in v0.1).",
+  "schema_ref": "conflict_check#ConflictCheckResponse",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-302",
+    "result": {
+      "level_reached": 1,
+      "partial": false,
+      "checked_at": "2026-04-29T17:41:12Z",
+      "conflicts": []
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

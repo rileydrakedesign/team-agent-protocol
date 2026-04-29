@@ -1,0 +1,53 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.diff valid attach + change",
+  "description": "Two changes in one diff: a new agent attached and an existing agent's state changed.",
+  "schema_ref": "state_diff#StateDiff",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.diff",
+    "params": {
+      "subscription_id": "tap_sub_AaBbCcDdEeFfGgHhIiJjKk1234",
+      "sequence": 4130,
+      "emitted_at": "2026-04-29T17:36:00Z",
+      "changes": [
+        {
+          "kind": "agent_attached",
+          "developer_id": "samchen",
+          "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+          "record": {
+            "developer_id": "samchen",
+            "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+            "branch": "feature/onboarding",
+            "worktree": "/home/sam/dev/tap",
+            "dirty_files": []
+          }
+        },
+        {
+          "kind": "state_changed",
+          "developer_id": "rileydrake",
+          "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "record": {
+            "developer_id": "rileydrake",
+            "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+            "branch": "feature/auth-refactor",
+            "worktree": "/Users/rileydrake/dev/tap",
+            "dirty_files": [
+              {
+                "file": "src/auth/oauth.rs",
+                "hunks": [
+                  { "start_line": 12, "end_line": 48, "op": "modify" }
+                ]
+              }
+            ],
+            "intent": "extracting OAuth flow"
+          }
+        }
+      ]
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

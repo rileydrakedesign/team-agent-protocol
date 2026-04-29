@@ -1,0 +1,18 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.declare valid response",
+  "description": "Response carrying a server-issued declaration_id and expires_at.",
+  "schema_ref": "conflict_declare#ConflictDeclareResponse",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-401",
+    "result": {
+      "declaration_id": "tap_decl_AbCdEfGhIjKlMnOp1234",
+      "expires_at": "2026-04-29T17:50:00Z"
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

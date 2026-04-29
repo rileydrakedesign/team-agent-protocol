@@ -1,0 +1,32 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.check valid request with hunks",
+  "description": "Pre-write check declaring two intended writes with hunk ranges. Asks the relay for Level 2 analysis.",
+  "schema_ref": "conflict_check#ConflictCheckRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-301",
+    "method": "conflict.check",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "feature/auth-refactor",
+      "intended_writes": [
+        {
+          "file": "src/auth/oauth.rs",
+          "hunks": [
+            { "start_line": 12, "end_line": 48, "op": "modify" }
+          ]
+        },
+        {
+          "file": "src/auth/mod.rs"
+        }
+      ]
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

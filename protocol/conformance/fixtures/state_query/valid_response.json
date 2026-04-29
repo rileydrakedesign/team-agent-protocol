@@ -1,0 +1,44 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.query valid response with two records",
+  "description": "Two awareness records returned, plus the relay's current sequence and snapshot timestamp.",
+  "schema_ref": "state_query#StateQueryResponse",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-101",
+    "result": {
+      "records": [
+        {
+          "developer_id": "rileydrake",
+          "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "branch": "feature/auth-refactor",
+          "worktree": "/Users/rileydrake/dev/tap",
+          "dirty_files": [],
+          "attached_at": "2026-04-29T17:00:00Z",
+          "last_heartbeat_at": "2026-04-29T17:35:12Z"
+        },
+        {
+          "developer_id": "samchen",
+          "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+          "branch": "main",
+          "worktree": "/home/sam/dev/tap",
+          "dirty_files": [
+            {
+              "file": "README.md",
+              "hunks": [
+                { "start_line": 12, "end_line": 18, "op": "modify" }
+              ]
+            }
+          ],
+          "intent": "fixing typos in README"
+        }
+      ],
+      "server_sequence": 4129,
+      "snapshot_at": "2026-04-29T17:35:30Z"
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

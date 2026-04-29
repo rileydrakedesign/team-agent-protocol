@@ -1,0 +1,21 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.query rejects missing scope",
+  "description": "scope.repo is required; queries without a repo cannot be routed.",
+  "schema_ref": "state_query#StateQueryRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-102",
+    "method": "state.query",
+    "params": {
+      "scope": {
+        "branches": ["main"]
+      }
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Repo scoping is the basis of policy enforcement; absence fails closed."
+}

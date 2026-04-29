@@ -1,0 +1,20 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.disconnect rejects unknown reason",
+  "description": "reason is a closed enum in v0.1; values outside the documented set are rejected.",
+  "schema_ref": "agent_disconnect#AgentDisconnect",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.disconnect",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "reason": "we_just_felt_like_it"
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Adding a reason value is a MAJOR bump until v0.2 introduces the gracefully-ignore-unknown guarantee per docs/VERSIONING.md §2.2."
+}
