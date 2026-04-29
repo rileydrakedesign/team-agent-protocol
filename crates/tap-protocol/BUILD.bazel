@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "tap-protocol",
+    srcs = glob(
+        [
+            "src/**/*.rs",
+        ],
+        allow_empty = False,
+    ),
+    crate_name = "tap_protocol",
+    edition = "2021",
+    deps = [
+        # Crate dependencies are resolved by Cargo for now; rules_rust crate
+        # universe extension lands when the binding crate gets external deps
+        # beyond the std library + serde.
+    ],
+)
+
+rust_test(
+    name = "tap-protocol_test",
+    crate = ":tap-protocol",
+    edition = "2021",
+)

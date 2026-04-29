@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+package(default_visibility = ["//visibility:public"])
+
+go_library(
+    name = "protocol",
+    srcs = [
+        "protocol.go",
+    ],
+    importpath = "github.com/tap-dev/tap/pkg/protocol",
+    deps = [
+        "//pkg/protocol/generated:generated",
+    ],
+)
+
+go_test(
+    name = "protocol_test",
+    srcs = ["protocol_test.go"],
+    embed = [":protocol"],
+)

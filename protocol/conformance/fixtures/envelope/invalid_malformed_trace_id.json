@@ -1,0 +1,16 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "envelope rejects malformed trace_id",
+  "description": "Rejects trace_id values that are not 32 lowercase hex characters.",
+  "schema_ref": "envelope#Request",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "NOT-A-TRACE-ID",
+    "id": "req-5",
+    "method": "agent.heartbeat"
+  },
+  "expected_valid": false,
+  "expected_error_code": -32600,
+  "notes": "trace_id MUST conform to the W3C Trace Context format (32 lowercase hex chars)."
+}

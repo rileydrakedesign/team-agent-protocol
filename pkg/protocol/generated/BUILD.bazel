@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_go//go:def.bzl", "go_library")
+
+package(default_visibility = ["//visibility:public"])
+
+go_library(
+    name = "generated",
+    srcs = glob(
+        ["*.go"],
+        allow_empty = False,
+    ),
+    importpath = "github.com/tap-dev/tap/pkg/protocol/generated",
+)

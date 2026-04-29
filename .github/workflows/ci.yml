@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: Apache-2.0
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bazel:
+    name: Bazel build & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.13.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      - name: Build
+        run: bazel build --config=ci //...
+
+      - name: Test
+        run: bazel test --config=ci //...
+
+  codegen-drift:
+    name: Codegen drift check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.13.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-codegen
+          repository-cache: true
+
+      - name: Regenerate bindings
+        run: bazel run --config=ci //tools/codegen:generate
+
+      - name: Verify no drift
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::Generated bindings drifted. Run 'bazel run //tools/codegen:generate' and commit the result."
+            exit 1
+          fi
+
+  pre-commit:
+    name: Pre-commit hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+
+  conformance:
+    name: Protocol conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [bazel]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.13.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-conformance
+          repository-cache: true
+
+      - name: Run conformance suite across all bindings
+        run: bazel test --config=ci //protocol/conformance/...

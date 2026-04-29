@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+# Driver script. Invoked via `bazel run //tools/codegen:generate`.
+# Phase 1 keeps host tooling (cue, typify, json2ts) ambient; hermetic
+# toolchain registration via @aspect_rules_js / @rules_rust toolchains
+# follows in Phase 2 once the rule shape is proven.
+sh_binary(
+    name = "generate",
+    srcs = ["generate.sh"],
+    data = [
+        "//protocol/schemas:cue_schemas",
+    ],
+)
+
+# Drift check: regenerates and asserts no diff. Wired into CI via
+# .github/workflows/ci.yml::codegen-drift; this target lets contributors
+# verify locally with `bazel test //tools/codegen:drift_check`.
+sh_test(
+    name = "drift_check",
+    srcs = ["drift_check.sh"],
+    data = [
+        ":generate",
+        "//protocol/schemas:cue_schemas",
+    ],
+    tags = ["requires-network", "manual"],
+)

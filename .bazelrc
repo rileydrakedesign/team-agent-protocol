@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# --- Module system ---------------------------------------------------------
+common --enable_bzlmod
+common --noenable_workspace
+
+# --- Build hygiene ---------------------------------------------------------
+build --incompatible_strict_action_env
+build --enable_platform_specific_config
+build --verbose_failures
+build --enable_runfiles
+
+# --- Test defaults ---------------------------------------------------------
+test --test_output=errors
+test --test_summary=detailed
+
+# --- Local disk cache ------------------------------------------------------
+build --disk_cache=~/.cache/bazel-tap-disk-cache
+
+# --- CI config (selected via --config=ci) ----------------------------------
+build:ci --color=yes
+build:ci --announce_rc
+build:ci --show_timestamps
+test:ci --test_output=errors
+test:ci --test_verbose_timeout_warnings
+
+# --- User overrides --------------------------------------------------------
+try-import %workspace%/.bazelrc.user

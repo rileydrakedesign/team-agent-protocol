@@ -1,0 +1,27 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.register rejects branch path traversal",
+  "description": "Rejects branch names containing '..' which could be used to escape the worktree namespace.",
+  "schema_ref": "agent_register#AgentRegisterRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-3",
+    "method": "agent.register",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "machine_id": "fedcba9876543210fedcba9876543210",
+      "editor": "claude-code",
+      "session_id": "550e8400-e29b-41d4-a716-446655440000",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "feature/../../etc",
+      "worktree": "/Users/rileydrake/dev/team-agent-protocol",
+      "capabilities": []
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Defends against branch-name path traversal. The branch regex in identity.cue forbids '..'."
+}

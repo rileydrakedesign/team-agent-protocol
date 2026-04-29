@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose a new capability, message type, or behavioral change
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening, please confirm the request is not in scope of an existing issue or already covered by `project-context.md` §8 (phased plan).
+
+        Wire-protocol changes (new message types, schema changes) require an RFC through the protocol working group. This template is a starting point; substantive proposals should be moved to a discussion thread.
+  - type: input
+    id: component
+    attributes:
+      label: Affected component
+      placeholder: e.g. protocol, daemon, claude-code-adapter
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the user-facing problem, not the proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Which phase do you believe this fits in?
+      options:
+        - Phase 1 — Protocol & foundations
+        - Phase 2 — Daemon, local conflict detection, Claude Code adapter
+        - Phase 3 — Hosted relay, cross-developer awareness
+        - Phase 4 — Messaging, consults, tasks, trust model
+        - Phase 5 — Semantic conflict detection, multi-editor, dashboard v2
+        - Phase 6 — Enterprise
+        - Continuing concern (parallel to all phases)
+        - Unsure
+    validations:
+      required: true

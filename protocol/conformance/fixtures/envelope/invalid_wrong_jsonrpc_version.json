@@ -1,0 +1,16 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "envelope rejects wrong jsonrpc version",
+  "description": "Rejects messages whose 'jsonrpc' field is not exactly '2.0'.",
+  "schema_ref": "envelope#Request",
+  "data": {
+    "jsonrpc": "1.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-4",
+    "method": "agent.heartbeat"
+  },
+  "expected_valid": false,
+  "expected_error_code": -32600,
+  "notes": "JSON-RPC 2.0 mandates 'jsonrpc' is the literal string '2.0'."
+}

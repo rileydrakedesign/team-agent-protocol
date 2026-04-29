@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/tap-dev/tap/security/advisories/new
+    about: Do not open a public issue. File a private security advisory.
+  - name: Question or discussion
+    url: https://github.com/tap-dev/tap/discussions
+    about: Use GitHub Discussions for design discussion, questions, and protocol RFC drafts.

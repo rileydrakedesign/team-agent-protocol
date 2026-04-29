@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "fixtures",
+    srcs = glob(
+        ["fixtures/**/*.json"],
+        allow_empty = False,
+    ),
+)
+
+# Per-language conformance test runners are wired in:
+#   crates/tap-protocol/tests/BUILD.bazel
+#   pkg/protocol/BUILD.bazel
+#   packages/tap-protocol/BUILD.bazel
+# This package only exports the shared fixture corpus.

@@ -1,0 +1,567 @@
+# TAP — Team Agent Protocol
+
+> A protocol and platform for cross-developer AI agent coordination, conflict prevention, and bilateral consults during active development.
+
+This document is the source of truth for the TAP project. It is designed to be read by Claude Code (and other coding agents) as project context. Keep it updated as decisions evolve. When you (the agent) are uncertain, refer back here before asking the user.
+
+---
+
+## 0. How to use this document
+
+- **Section 1** is the product thesis. Read it once, refer back when scoping decisions feel ambiguous.
+- **Section 2** is locked architectural decisions. Do not revisit without explicit user approval.
+- **Sections 3–7** describe the system in detail.
+- **Section 8** is the phased development plan with explicit ship criteria.
+- **Section 9** is the working-state block — current phase, current task, open questions. **Update this as work progresses.**
+- **Section 10** is a glossary.
+
+When starting a new session: read sections 1, 2, and 9 at minimum.
+
+---
+
+## 1. Product thesis
+
+### 1.1 The problem
+
+Modern development teams increasingly run multiple AI coding agents per developer (Claude Code, Cursor, Codex, Aider) across isolated git worktrees. This pattern surfaces two recurring failures:
+
+1. **Silent merge conflicts.** Agents working in separate worktrees are blind to each other's in-flight changes. Conflicts surface at PR time, after significant work has already been done on incompatible assumptions.
+2. **Coordination overhead between humans.** When developer A's agent needs context that developer B has — about the auth refactor, the database migration, the API contract change — the only path is human-mediated: A messages B in Slack, B context-switches, copies files into their own agent, gets an answer, copies it back to A's agent. The agents themselves cannot consult each other.
+
+Single-developer multi-agent orchestration is solved (Claude Code Agent Teams, GitHub Squad, Augment Intent, sub-agent patterns). Cross-developer agent coordination is empty space.
+
+### 1.2 The solution
+
+TAP is two products fused:
+
+1. **Cross-developer awareness and conflict prevention.** A real-time map of who is touching what across the team, with file-level, hunk-level, and semantic conflict detection delivered to agents before they write.
+2. **Agent-to-agent consults.** A first-class primitive for one developer's agent to open a stateful, contextual conversation with another developer's agent, with full security, audit, and human-oversight guarantees.
+
+The fusion matters. Conflict detection without messaging tells you "your agent conflicts with Riley's branch" — useful. Conflict detection plus consults lets your agent ask Riley's agent *about* the conflict and resolve it collaboratively — qualitatively different.
+
+### 1.3 Positioning
+
+- **Editor-agnostic.** Works with any agent that speaks MCP, with first-class adapters for the most-used coding agents.
+- **Open-core.** Protocol, daemon, adapters, SDKs are Apache 2.0. Hosted relay is BSL 1.1 with 4-year Apache conversion. Enterprise features (SSO, on-prem, advanced policy, compliance) are commercial.
+- **Conformant with Google A2A** for agent identity and discovery; extends with development-specific primitives.
+- **Standards-aspirational.** TAP aims to be the IETF-track protocol for team-scoped agent collaboration, not a single-vendor stack.
+
+### 1.4 Non-goals
+
+- TAP is not an agent. It does not write code, plan tasks, or invoke LLMs on behalf of users.
+- TAP is not a code review tool. It does not replace PRs, CI, or human review.
+- TAP is not a chat platform. Human-to-human chat happens elsewhere (Slack, Linear); TAP integrates rather than competes.
+- TAP is not a single-developer orchestrator. Within-machine multi-agent coordination is solved by editor-native features; TAP starts at the team boundary.
+
+---
+
+## 2. Locked architectural decisions
+
+These decisions are frozen unless overturned by explicit user direction. Agents working on the project should treat them as constraints.
+
+| Concern | Decision |
+|---|---|
+| Daemon language | Rust |
+| Relay edge tier language | Go |
+| Relay core tier language | Go (Rust permitted for performance-critical paths if measured) |
+| Worker tier language | Mixed: Go for orchestration, Rust for tree-sitter/semantic analysis |
+| Wire format | JSON-RPC 2.0 over WSS |
+| Schema language | CUE; bindings generated for Rust, Go, TypeScript |
+| Daemon ↔ agent transport | Unix socket (Linux/macOS) / named pipe (Windows) with same JSON-RPC framing |
+| Hot state | Redis cluster |
+| Durable state | Postgres with read replicas |
+| Pub/sub & queues | NATS JetStream |
+| Object store | S3-compatible |
+| Analytics store | ClickHouse (Phase 5+) |
+| Container orchestration | Kubernetes |
+| Identity baseline | GitHub OAuth Device Flow (developer); SAML/OIDC (enterprise) |
+| Daemon trust to relay | mTLS with daemon-side pinned CA |
+| Audit integrity | Cryptographic chaining (each entry hashes the prior) |
+| Inbound message handling | Structured envelope; never raw prompt prepending |
+| Protocol baseline | Conformant with Google A2A; extends |
+| Conformance | Public test suite required for any TAP implementation |
+| License (protocol, adapters, daemon, SDKs) | Apache 2.0 |
+| License (relay) | BSL 1.1 with 4-year conversion to Apache 2.0 |
+| Repository structure | Monorepo |
+| Versioning | Semantic versioning per component; protocol versioned independently |
+
+Do not change these without recording the rationale in section 9 and getting user approval.
+
+---
+
+## 3. System overview
+
+### 3.1 Components
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       DEVELOPER WORKSTATIONS                         │
+│                                                                      │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐            │
+│  │ Claude Code  │   │   Cursor     │   │    Codex     │            │
+│  │  + adapter   │   │  + adapter   │   │  + adapter   │            │
+│  └──────┬───────┘   └──────┬───────┘   └──────┬───────┘            │
+│         │ Unix socket       │ MCP              │ MCP                │
+│         └───────────────────┼──────────────────┘                    │
+│                             │                                        │
+│                    ┌────────▼─────────┐                              │
+│                    │  Local Daemon    │  Rust, one per developer    │
+│                    │  - Git watcher   │                              │
+│                    │  - State cache   │                              │
+│                    │  - MCP server    │                              │
+│                    │  - Agent router  │                              │
+│                    │  - Consult mgr   │                              │
+│                    │  - Local policy  │                              │
+│                    └────────┬─────────┘                              │
+└─────────────────────────────┼───────────────────────────────────────┘
+                              │ WSS (TAP, mTLS-pinned)
+                              │
+        ┌─────────────────────▼─────────────────────────┐
+        │                RELAY CLUSTER                   │
+        │  Edge:    WS gateway, auth, rate limits        │
+        │  Core:    routing, presence, awareness, consult│
+        │  Workers: conflict detection, semantic, replay │
+        │  Storage: Postgres, Redis, NATS, S3, ClickHouse│
+        └────────────┬──────────────────────┬────────────┘
+                     │                       │
+            ┌────────▼────────┐    ┌────────▼────────┐
+            │  Web Dashboard  │    │  Admin / Audit  │
+            │   (Next.js)     │    │     Console     │
+            └─────────────────┘    └─────────────────┘
+```
+
+### 3.2 Component summary
+
+- **Editor adapters.** Thin clients per editor. Register the agent with the local daemon, expose the daemon's TAP tools to the agent via the editor's native mechanism (MCP, hooks, plugin API), stream agent activity events back to the daemon. Adapters contain no business logic.
+- **Local daemon.** One per developer machine, multi-tenant across editors and agents. Long-running OS service. Owns git state, local awareness cache, agent routing, consult management, local policy.
+- **Relay.** Hosted multi-tier service. Edge tier handles WSS gateway and auth. Core tier owns presence, awareness state, message routing, consult coordination. Worker tier runs expensive jobs (semantic conflict detection, replay generation, webhook fanout).
+- **Protocol (TAP).** JSON-RPC 2.0 over WSS for daemon ↔ relay; same framing over Unix socket for daemon ↔ agent. Conforms with Google A2A; extends with development-specific message types.
+- **Web dashboard.** Live activity map, consult list, conflict heatmap, audit log search, trust and policy management.
+- **Admin / audit console.** Restricted-access surface for org administrators: audit log with compliance export, SSO/SCIM management, billing, incident response tooling.
+
+### 3.3 Service-level objectives
+
+| Metric | Target |
+|---|---|
+| Conflict check end-to-end (daemon → relay → daemon) P95 | ≤ 100 ms |
+| Conflict check from local cache only P95 | ≤ 50 ms |
+| Message delivery P95 | ≤ 250 ms |
+| Awareness state propagation P95 (cross-region) | ≤ 500 ms |
+| Hosted plan availability | 99.9% |
+| Enterprise plan availability | 99.95% |
+
+---
+
+## 4. Local daemon
+
+### 4.1 Subsystems
+
+- **Git state engine.** Watches every opted-in repo. Native filesystem events (inotify / FSEvents / ReadDirectoryChangesW) trigger debounced reads of `git status --porcelain=v2`, `git worktree list --porcelain`, `git diff --name-only`, `git rev-parse`. Maintains a per-repo state graph: branches, worktrees, dirty files, staged hunks, recent commits, untracked files.
+- **Hunk-level diff tracker.** Parses dirty diffs into line ranges. Maintains `(file, branch, [(start_line, end_line, op)])`. Required for Level 2 conflict detection.
+- **Local awareness cache.** Read-through cache of the relay's awareness state for every participating repo. Sub-50 ms local query mandatory — the PreToolUse hook is on the critical path of every agent edit. Updates pushed from relay over WSS as deltas, not full snapshots.
+- **MCP server.** Exposes daemon capabilities to local agents over Unix socket / named pipe. Tool schema is part of the TAP spec. Discovery via well-known socket path or `TAP_DAEMON_SOCKET` env var.
+- **Agent router.** Multiple agents can be registered to one daemon. Inbound messages from the relay are routed to the right agent based on `agent_id`, branch context, or routing rules.
+- **Consult manager.** Active consult registry (persisted to local SQLite). Context bundler (packages files/diffs for outbound, redacts per policy, pushes content-addressed bundle to relay). Context resolver (fetches inbound bundles, exposes contents as scoped MCP resources). Approval UX (native desktop notifications). Transcript persistence.
+- **Local policy engine.** Rules evaluated before outbound messages and on inbound messages: rate limits, scope checks, auto-approve lists, redaction rules. Configured via `~/.tap/policy.toml` and per-repo `.tap/policy.toml` (per-repo file authoritative for repo-scoped decisions).
+- **Outbound queue.** Persistent (SQLite-backed) buffer for messages destined for the relay when offline.
+- **Telemetry.** Structured JSON logs, OpenTelemetry traces, optional anonymous usage metrics (opt-in only).
+
+### 4.2 Distribution
+
+Single static binary per platform.
+
+- **macOS:** signed and notarized; Homebrew tap.
+- **Linux:** musl static binary; deb / rpm / apk; AUR.
+- **Windows:** signed MSI; Scoop.
+
+Auto-update via signed manifests. Reproducible builds. Transparency log for releases.
+
+### 4.3 Configuration
+
+```toml
+# ~/.tap/config.toml
+[identity]
+github_token_keychain_ref = "tap.github.token"
+
+[relay]
+url = "wss://relay.tap.dev"
+ca_pin = "sha256:..."
+
+[telemetry]
+anonymous_metrics = false
+
+# ~/.tap/policy.toml (user-global defaults)
+[messaging]
+default_inbound_scope_max = "advisory"
+auto_approve_from = []  # list of GitHub usernames
+rate_limit_outbound_per_minute = 30
+
+[consults]
+default_inbound_scope_max = "advisory"
+require_human_approval_above_scope = "suggest_edit"
+auto_summarize_after_turns = 20
+
+# <repo>/.tap/policy.toml (per-repo overrides; authoritative for this repo)
+[redaction]
+exclude_files = [
+  ".env*",
+  "secrets/**",
+  "**/*.pem",
+  "**/*.key"
+]
+
+[consults]
+auto_accept_from = ["riley", "sam"]  # for advisory-scope consults only
+```
+
+---
+
+## 5. Relay
+
+### 5.1 Tiers
+
+**Edge tier.** Stateless WS gateway. Terminates TLS, validates JWTs, enforces rate limits, routes to core nodes by repo affinity (consistent hash on repo ID). Behind a global anycast load balancer. Per-connection memory budget under 50 KB to support 100k+ concurrent connections per edge node.
+
+**Core tier.** Stateful. One process per repo shard. Owns:
+
+- *Presence.* Sorted-set in Redis, heartbeat TTL. Diff broadcasts via in-memory pub/sub plus NATS for cross-node fanout.
+- *Awareness state.* Live map of `repo → branch → developer → files → intent`. Hot path in Redis with Postgres write-behind. Changes published as deltas.
+- *Message router.* `msg.send` → resolve recipients → push if connected, persist to durable inbox if not.
+- *Consult coordinator.* Lifecycle state machine, transcript persistence with Ed25519 chaining, multi-party turn ordering (Lamport clocks plus relay-assigned sequence numbers), session multiplexing across a single WS connection.
+- *Conflict orchestration.* Receives `conflict.check` requests, fans out to detector workers, returns aggregated results.
+- *Durable inbox.* Per-agent message queue (Postgres, S3 archival).
+
+**Worker tier.** Stateless compute, NATS JetStream consumers. Horizontally scalable.
+
+- Level 2 hunk-overlap analysis
+- Level 3 semantic conflict detection (tree-sitter parsing → symbol graph → cross-branch dependency analysis)
+- Replay artifact generation
+- Webhook fanout (GitHub, GitLab event ingestion)
+- Audit log compliance exports
+
+### 5.2 Storage
+
+- **Postgres** (primary, read replicas): identity, team membership, durable inbox, audit log, billing, policy configuration, semantic graph cache, consult transcripts.
+- **Redis** (cluster mode): presence, hot awareness state, rate limit counters, ephemeral session data.
+- **NATS JetStream:** state diffs, work queues, audit fan-out.
+- **S3-compatible:** audit archival, replay artifacts, semantic graph snapshots, consult context bundles (encrypted at rest with per-consult derived keys).
+- **ClickHouse** (Phase 5+): analytics queries over audit log.
+
+### 5.3 Deployment
+
+Kubernetes. Multi-region active-active for edge; regional with DR replication for core. Postgres via managed provider (RDS / Cloud SQL / Crunchy Bridge) with PITR. Redis via managed cluster. NATS self-hosted.
+
+### 5.4 Observability
+
+OpenTelemetry traces end-to-end (every TAP message gets a trace ID that follows it from origin agent → daemon → relay → recipient daemon → recipient agent). Prometheus metrics. Structured logs to managed sink. Grafana dashboards. PagerDuty wired to SLO breaches.
+
+---
+
+## 6. Protocol (TAP v0.1)
+
+### 6.1 Transport
+
+- Daemon ↔ Relay: WSS, JSON-RPC 2.0, mTLS with pinned CA on daemon side, JWT for developer/agent identity in handshake.
+- Daemon ↔ Agent: Unix socket / named pipe, JSON-RPC 2.0, no transport-level auth (process-local trust boundary).
+
+### 6.2 Identity
+
+- **Developer identity:** GitHub by default; SAML/OIDC for enterprise. Issued as JWT, short TTL, refresh token in OS keychain.
+- **Agent identity:** `agent_id = hash(developer_id, machine_id, editor, session_id)`. Ephemeral; re-registers each session.
+- **Repo identity:** canonical URL plus org membership; teams scoped within an org.
+- **Trust pairs:** per-(developer, developer) trust state; controls auto-approve.
+
+### 6.3 Message taxonomy
+
+All messages carry `tap_version` (semver) and `trace_id`. Negotiated at handshake; relay supports N-1 major version.
+
+**Lifecycle.**
+- `agent.register` — initial handshake; capabilities, repo, branch, worktree
+- `agent.heartbeat` — periodic liveness + state
+- `agent.deregister` — clean shutdown
+- `agent.disconnect` — server-initiated termination
+
+**Awareness.**
+- `state.announce` — push state changes (dirty files, intent, branch switches)
+- `state.query` — request current awareness snapshot for a scope
+- `state.subscribe` — long-lived subscription to state diffs
+- `state.diff` — server-pushed delta
+
+**Conflict.**
+- `conflict.check` — pre-write check; returns conflict report (Level 1, 2, or 3 depending on what's available)
+- `conflict.declare` — proactive declaration ("I'm about to edit X")
+- `conflict.release` — release a declared lock
+- `conflict.notify` — server-pushed notification of newly detected conflict
+
+**Messaging.** (one-shot, addressed)
+- `msg.send` — addressed message (dev → dev, agent → agent, agent → broadcast)
+- `msg.deliver` — server-pushed delivery
+- `msg.ack` — delivery and processing acknowledgement
+- `msg.error` — delivery failure
+
+**Consults.** (stateful, multi-turn)
+- `consult.request` — initiator opens a consult; carries topic, context bundle reference, scope, urgency
+- `consult.accept` — recipient accepts (human, agent, or auto-accept policy)
+- `consult.reject` — recipient declines; may include suggested alternative
+- `consult.message` — turn within an active consult
+- `consult.context_update` — add files / diffs mid-consult
+- `consult.invite` — add a third party
+- `consult.handoff` — escalate consult into a `task.handoff`
+- `consult.summarize` — request or push a rolling summary
+- `consult.resolve` — terminal state with outcome and artifacts
+- `consult.abandon` — terminal state without resolution
+- `consult.observe` — human subscribes to live transcript
+
+**Tasks.**
+- `task.handoff` — request another agent take ownership of a task
+- `task.accept` / `task.reject` — recipient response
+- `task.update` — progress notification
+- `task.complete` — terminal state with result
+
+**Policy and trust.**
+- `policy.evaluate` — server-side policy check (used by relay before delivering high-scope messages)
+- `trust.grant` / `trust.revoke` — bilateral trust state changes (signed)
+- `approval.request` / `approval.respond` — human-in-the-loop gate
+
+### 6.4 Schemas
+
+CUE schemas in `protocol/schemas/`. Build-time generation produces:
+
+- `crates/tap-protocol` (Rust)
+- `pkg/protocol` (Go)
+- `packages/tap-protocol` (TypeScript)
+
+Conformance test suite in `protocol/conformance/` — fixtures any implementation must pass.
+
+### 6.5 Versioning
+
+Protocol versioned independently of components. Backward compatibility maintained within a major version. Negotiated at handshake. Relay supports current and previous major version.
+
+---
+
+## 7. Conflict detection engine
+
+Four levels, composable. A `conflict.check` returns the highest-confidence result available within the latency budget.
+
+**Level 1 — File-level.** Two agents/worktrees have dirty changes to the same file path. Pure string match on awareness state. Implemented in daemon's local cache. Sub-50 ms.
+
+**Level 2 — Hunk-level.** Line-range overlap analysis. Each daemon reports `(file, branch, [(start_line, end_line, op)])`. Conflict detector compares ranges. Worker job triggered by `conflict.check`; result cached at relay 30 s.
+
+**Level 3 — Semantic.** Per-branch symbol graph built with tree-sitter. Graph stores definitions, references, type signatures, import edges. On `conflict.check`:
+
+1. Map intended write to AST nodes
+2. Query symbol graph for affected symbols
+3. Check whether other branches modify same symbols, or modify symbols this write depends on
+4. Produce structured conflict report
+
+Languages at launch: Rust, TypeScript, Go, Python, Java. Cached aggressively per `(repo, branch, commit)`. Incremental rebuild on commit.
+
+**Level 4 — Runtime/resource.** Shared ports, database migrations, environment variables, build cache invalidation. Detected via daemon-reported metadata (declared dev server ports, running migrations, modified config files).
+
+---
+
+## 8. Phased development plan
+
+Each phase is a coherent milestone with explicit ship criteria. No time estimates; phases ship when criteria are met.
+
+### Phase 1 — Protocol & foundations
+
+**Goal:** stable specification and scaffolding.
+
+**Deliverables:**
+- TAP v0.1 specification document (formal)
+- CUE schemas; generated bindings for Rust, Go, TypeScript
+- Conformance test suite
+- Repository structure, CI/CD pipeline, security policy, contribution guidelines
+- Threat model document
+
+**Ship criteria:** an external implementer can read the spec and produce a conformant client without consulting source code.
+
+### Phase 2 — Daemon, local conflict detection, Claude Code adapter
+
+**Goal:** a single developer running multiple agents in worktrees has Level 1 and Level 2 conflicts caught before write.
+
+**Deliverables:**
+- Daemon: git state engine, hunk diff tracker, local awareness cache, MCP server, agent router, local policy engine, outbound queue, telemetry
+- Claude Code adapter: hook scripts (`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`), MCP server registration, full tool surface
+- Level 1 and Level 2 conflict detection (local-only, no relay yet)
+- CLI: `tap status`, `tap whois`, `tap conflicts`, `tap watch`, `tap log`
+- Daemon distribution: signed binaries macOS / Linux / Windows; package manager artifacts
+- Daemon test suite including chaos tests
+
+**Ship criteria:** developer running 4 Claude Code agents in 4 worktrees on a real codebase reports zero false positives over a week and at least one prevented merge conflict.
+
+### Phase 3 — Hosted relay, cross-developer awareness
+
+**Goal:** multi-developer teams share awareness state and detect cross-developer conflicts.
+
+**Deliverables:**
+- Relay: edge tier, core tier, storage layer, deployment automation, observability stack
+- Auth: GitHub OAuth Device Flow, JWT issuance, repo membership resolution, mTLS daemon connection
+- Awareness state synchronization (`state.announce`, `state.subscribe`, `state.diff`)
+- Cross-developer conflict detection (Levels 1 and 2)
+- Daemon: relay connection management, awareness subscription, fallback to local-only on relay outage
+- Web dashboard v1: live activity map, basic audit log view
+- SLO instrumentation and alerting
+
+**Ship criteria:** 5-developer team uses TAP in production for two weeks; awareness propagation P95 < 500 ms; documented case of cross-developer conflict caught before PR.
+
+### Phase 4 — Messaging, consults, tasks, trust model
+
+**Goal:** agents can ask each other questions and hand off tasks across developers, with full security model in force. Consults are the headline feature.
+
+**Deliverables:**
+- Messaging: `msg.send`, `msg.deliver`, `msg.ack`, `msg.error`, durable inbox
+- **Consults: full `consult.*` taxonomy, lifecycle state machine, context bundling and resolution, transcript persistence, multi-party support**
+- Task primitives: `task.handoff`, `task.accept`/`reject`, `task.update`, `task.complete`
+- Trust graph: `trust.grant`, `trust.revoke`; UI in dashboard
+- Approval gates: `approval.request`/`respond`; desktop notifications via daemon
+- Sandboxed message handling: structured envelope, system-prompt injection-defense patterns documented and tested
+- Policy engine: per-repo and per-developer policy with rate limits, scope rules, auto-approve lists
+- Audit log with cryptographic chaining; admin console v1
+- Anomaly detection on message volume and scope distribution
+
+**Ship criteria:** documented scenario where two developers' agents collaborate on a feature via a consult without their humans manually copying context between them; security review of messaging path with no critical findings.
+
+### Phase 5 — Semantic conflict detection, multi-editor support, dashboard v2
+
+**Goal:** detection deep enough to be unambiguously valuable; ecosystem broad enough to be the default choice.
+
+**Deliverables:**
+- Level 3 semantic conflict detection: tree-sitter, symbol graph, cross-branch dependency analysis. Languages: Rust, TS, Go, Python, Java
+- Level 4 resource conflict detection: ports, migrations, env vars
+- Cursor adapter (MCP-based)
+- Codex adapter (hooks + MCP)
+- Aider adapter (upstream PR)
+- Generic MCP adapter for long-tail editors
+- Dashboard v2: conflict heatmap, agent timeline, advanced audit search, policy management UI
+- Public conformance program
+
+**Ship criteria:** semantic detection precision ≥ 90%, recall ≥ 75% on benchmark of real conflicts mined from public repos; three editors supported; one external community-built adapter certified.
+
+### Phase 6 — Enterprise
+
+**Goal:** defensible enterprise product.
+
+**Deliverables:**
+- SSO: SAML 2.0, OIDC, SCIM provisioning
+- VPC / on-premises deployment: Helm charts, air-gapped install, license server
+- Compliance: SOC 2 Type II, optional ISO 27001, GDPR endpoints, data residency controls
+- Policy templates and bulk management; org-wide guardrails
+- Compliance exports: SIEM-friendly streams (Splunk, Datadog, Elastic)
+- Agent observability surface: per-agent activity reports for managers (with privacy controls)
+- Incident response tooling: kill switch, agent quarantine, retroactive trust revocation, forensic export
+- Customer success surfaces
+
+**Ship criteria:** signed enterprise customer with on-premises deployment in production.
+
+### Continuing concerns (parallel to all phases)
+
+- Performance regression suite blocks relay deploys on SLO breach
+- External pentest before Phase 4 ships; recurring annually after
+- Protocol working group, public RFC process, conformance test additions
+- Documentation treated as deliverable, not afterthought
+- Community governance for protocol distinct from product
+
+---
+
+## 9. Working state
+
+> **Update this section as work progresses. This is the agent's primary context for "what am I doing right now."**
+
+### 9.1 Current phase
+
+`Phase 1 — Protocol & foundations`
+
+### 9.2 Current task
+
+Phase 1 scaffolding landed (2026-04-28). Next: validate the codegen pipeline end-to-end and complete the Phase 2 message subset in the spec.
+
+### 9.3 Immediate next steps
+
+**Done in this session (2026-04-28):**
+
+- ✅ Monorepo structure scaffolded: `protocol/`, `crates/tap-protocol/`, `pkg/protocol/`, `packages/tap-protocol/`, `tools/codegen/`, `docs/`, `.github/`.
+- ✅ Bazel + bzlmod foundation: `MODULE.bazel`, `.bazelrc`, `.bazelversion` (7.4.1), root `BUILD.bazel`, `.gitignore`, `.gitattributes`, `.editorconfig`, `LICENSE` (Apache 2.0), `NOTICE`, `README.md`.
+- ✅ Governance & community: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `SECURITY.md`, `GOVERNANCE.md`, `ARCHITECTURE.md`, GitHub issue/PR templates, `dependabot.yml`.
+- ✅ CI: `ci.yml` (Bazel build/test/conformance + codegen drift check), `codeql.yml`, `scorecard.yml`. Pre-commit config with buildifier, rustfmt, clippy, gofmt, prettier, cue fmt, addlicense, commitlint.
+- ✅ Protocol scaffolding: `SPEC.md` skeleton with full table of contents and lifecycle messages section populated; CUE schemas for envelope, identity, `agent.register`. `cue.mod/module.cue` configured.
+- ✅ Conformance harness: `conformance/README.md` documents fixture format (modeled on JSON Schema Test Suite); first fixtures for `agent.register` (valid request, valid response, missing required field, branch-traversal rejection) and envelope (wrong jsonrpc version, malformed trace_id).
+- ✅ Codegen pipeline: `tools/codegen/generate.sh` orchestrates CUE → JSON Schema → typify (Rust) / json-schema-to-typescript (TS) / cue exp gengotypes (Go). Bazel `sh_binary` wraps it; `drift_check.sh` is the local test harness.
+- ✅ Three binding packages scaffolded with hand-written envelope helpers (version negotiation, semver parsing) plus tests. Each has BUILD.bazel and native package manifest (Cargo.toml, go.mod, package.json).
+- ✅ Per-language conformance test runners: `crates/tap-protocol/tests/conformance.rs`, `pkg/protocol/conformance_test.go`, `packages/tap-protocol/src/test/conformance.test.ts`. Currently exercise structural round-trip; per-schema typed assertions get added once codegen runs locally.
+- ✅ `docs/THREAT_MODEL.md` covering assets, trust boundaries, adversaries, STRIDE-style decomposition, sandboxing of inbound agent messages (the "structured envelope, never raw prompt prepending" rule), supply chain, cryptographic primitives.
+
+**Next:**
+
+1. Install the codegen toolchain locally (`cue`, `typify`, `json-schema-to-typescript`) and run `bazel run //tools/codegen:generate` to produce the first real bindings. Commit them. Verify `bazel test //...` is green across all three languages.
+2. Specify the remaining lifecycle messages (`agent.heartbeat`, `agent.deregister`, `agent.disconnect`) in CUE and `SPEC.md`. Add fixtures.
+3. Specify awareness messages (`state.announce`, `state.query`, `state.subscribe`, `state.diff`) in CUE and `SPEC.md`. Add fixtures.
+4. Specify conflict messages (`conflict.check`, `conflict.declare`, `conflict.release`, `conflict.notify`) in CUE and `SPEC.md`. Add fixtures.
+5. Wire `git init` + initial commit. Push to GitHub. Enable branch protection on `main` (signed commits, required reviews, required CI checks).
+6. Validate Phase 1 ship criterion: hand the spec + schemas + conformance suite to an external engineer and confirm they can produce a passing client without reading TAP source.
+
+### 9.4 Open questions
+
+- **codegen toolchain hermeticity.** Phase 1 keeps `cue`, `typify`, `json2ts` as ambient host dependencies. Should we move to hermetic Bazel toolchains (`rules_rust` crate-universe for typify, `aspect_rules_js` for json2ts, `rules_oci` for cue) before Phase 2? Tradeoff: hermeticity vs. ramp-up cost. Lean toward yes by mid-Phase 2.
+- **Conduct/security email aliases.** `conduct@tap.dev` and `security@tap.dev` are referenced in docs but not yet provisioned. Provision when domain is registered, or replace with GitHub-native flows (Security Advisories, GitHub-hosted CoC contact form).
+
+### 9.5 Decision log
+
+> Append-only record of decisions made during work. Each entry: date, decision, rationale, alternatives considered.
+
+- **2026-04-28 — Build orchestrator: Bazel.** Chose Bazel over Make and `just` for the polyglot monorepo. Rationale: industry-standard for polyglot builds at scale (Google, Stripe, Pinterest, Uber), native reproducibility (mandated by §4.2), strong fit for the codegen pipeline's cross-language fan-out. Alternatives considered: Make (insufficient for codegen graph, weak Windows story), `just` (niche, ergonomic but not industry-standard), Buck2 (newer, smaller community), Nx/Turborepo (JS-first, wrong center of gravity), Pants/Earthly (niche). Cost: real ramp-up time and `BUILD.bazel` files in every directory.
+- **2026-04-28 — Bzlmod, not legacy WORKSPACE.** Default in Bazel 8; legacy removed in Bazel 9. No reason to choose legacy for a new project.
+- **2026-04-28 — Generated bindings committed, drift-checked.** Generated files under `**/generated/` are committed to the repo and checked for drift in CI (`bazel run //tools/codegen:generate && git diff --exit-code`). Rationale: §1.3 standards-aspirational posture demands external implementers can read source without installing Bazel + CUE. Tradeoff accepted: large diffs on schema changes, mitigated via `linguist-generated=true` in `.gitattributes`. Alternatives considered: build-only outputs (Bazel-pure but creates divergence between repo and published packages), generate-at-publish-time (more complex, marginal cleanliness gain).
+- **2026-04-28 — Codegen tools.** Rust: `typify` (Oxide Computer; better Rust output than `quicktype`; ecosystem standard). TypeScript: `json-schema-to-typescript` (single-purpose, ~3M weekly downloads, ecosystem standard). Go: `cue exp gengotypes` (official CUE-team path; bypasses lossy JSON Schema hop). Asymmetry (Go skips JSON Schema) is noted; conformance suite is the safety net.
+- **2026-04-28 — Conformance fixture format.** Plain JSON, modeled on the JSON Schema Test Suite format. Each fixture: `{name, description, schema_ref, data, expected_valid, expected_round_trip?, expected_error_code?}`. Alternatives rejected: YAML (extra parser dep), TOML (wrong shape), CUE-driven generation (ties conformance to CUE tooling).
+- **2026-04-28 — Pre-commit framework.** `pre-commit` (pre-commit.com), the universal polyglot standard. Hooks: buildifier, rustfmt, clippy, gofmt, prettier, cue fmt, addlicense, commitlint, plus standard hygiene. Alternatives: husky (JS-only), lefthook (faster but less mature).
+- **2026-04-28 — CI provider: GitHub Actions + CodeQL + OpenSSF Scorecard.** Universal for OSS-on-GitHub. Bazel integration via `bazel-contrib/setup-bazel`. Alternatives deferred: GitLab CI (Phase 6 enterprise concern at most).
+- **2026-04-28 — License header tool: `addlicense`.** CNCF/Kubernetes standard. CI-blocking from day one. `license-eye` revisited if Phase 3's BUSL split makes multi-license complexity painful.
+- **2026-04-28 — Conventional Commits, signed commits, OpenSSF Scorecard.** Adopted from day one. Enforced via commitlint + branch protection (forthcoming). Standard for serious OSS / security-adjacent projects.
+- **2026-04-28 — Bazel remote cache deferred.** Local cache sufficient for Phase 1 build size. Add BuildBuddy free tier when CI builds exceed ~5 minutes (likely Phase 2 daemon work).
+- **2026-04-28 — Bazel version pinned to 7.4.1.** Stable bzlmod, all rule ecosystems we need (rules_rust, rules_go, aspect_rules_ts) validated. Bumped via `.bazelversion` deliberately.
+- **2026-04-28 — Rust MSRV 1.82, Go 1.23, Node 20.18 LTS.** Recent stable, well-supported by Bazel rule ecosystems.
+
+### 9.6 Deferred items
+
+> Things noticed during work that are out of scope for the current phase but should not be forgotten.
+
+- **Hermetic codegen toolchains.** Move `cue`, `typify`, `json2ts` from ambient host deps to Bazel-managed toolchains. Phase 2.
+- **Bazel remote cache.** Add BuildBuddy free tier when CI build time exceeds ~5 min.
+- **rules_rust crate-universe.** Wire Cargo dep resolution into Bazel proper instead of relying on Cargo at the Bazel boundary. Phase 2 once `tap-daemon` lands and depends on tokio, rustls, etc.
+- **`tap.dev` domain.** Acquire and provision `security@tap.dev`, `conduct@tap.dev`, PGP key for security disclosures.
+- **Branch protection on `main`.** Configure once repo is on GitHub: required signed commits, two-reviewer approval for `protocol/` and `tools/codegen/`, required CI checks, no force-push.
+- **Public PGP key for security disclosures.** Generate and publish before first tagged release.
+- **`SPEC.md` rendered HTML.** Phase 2 — render to HTML and host at `tap.dev/spec/v0.1/`.
+- **Conformance fixtures for prompt-injection patterns.** Threat model §5.3 calls for negative test cases for documented injection patterns. Add to `protocol/conformance/fixtures/sandboxing/` once messaging/consult schemas land in Phase 4.
+
+---
+
+## 10. Glossary
+
+- **Agent.** An LLM-driven coding assistant operating in an editor (Claude Code, Cursor, Codex, Aider). May be human-supervised or autonomous.
+- **Adapter.** Editor-specific thin client that bridges between an agent and the local daemon.
+- **Awareness state.** The relay's live map of who is working on what across a team, queryable by repo, branch, file, or developer.
+- **Consult.** A stateful, multi-turn, contextual conversation between two (or more) agents/developers about a specific topic, with lifecycle, transcript, and audit guarantees.
+- **Context bundle.** A scoped, content-addressed package of files, diffs, and references that travels with a consult so the recipient agent sees only what was deliberately shared.
+- **Daemon.** Long-running per-developer process that owns local git state, agent registration, and the WSS connection to the relay.
+- **Relay.** Hosted multi-tier service that provides identity, presence, awareness, routing, conflict detection, and consult coordination across developers.
+- **Scope.** A declared category of action a message or consult is permitted to perform: `read_only`, `advisory`, `suggest_edit`, `request_handoff`, `execute`. Higher scopes require greater trust or human approval.
+- **Trust pair.** A directed (developer → developer) relationship that controls auto-acceptance of inbound messages and consults at given scope levels.
+- **Worktree.** A git working directory linked to a shared `.git` object store, allowing parallel branch checkouts. Standard pattern for multi-agent development.
+- **TAP.** Team Agent Protocol — both the wire protocol (this spec) and the project (this repository).
+
+---
+
+## Appendix A — Working norms for agents on this project
+
+When you (Claude Code, or another agent) are working inside the TAP repository:
+
+1. **Read sections 1, 2, and 9 of this document at the start of every session.**
+2. **Update section 9.3 (next steps), 9.5 (decision log), and 9.6 (deferred items) as you work.** Future sessions depend on your notes.
+3. **Do not change section 2 (locked decisions) without explicit user approval.** Surface the proposal in 9.4 (open questions) instead.
+4. **Per-component CLAUDE.md files exist in each subdirectory** with component-specific instructions (e.g. `crates/tap-daemon/CLAUDE.md` describes the daemon's internal architecture). Read those when working in that component.
+5. **The protocol spec is the source of truth for wire format.** Code generation flows from CUE schemas; do not hand-edit generated bindings.
+6. **Conformance tests gate every protocol change.** Update tests before changing the spec.
+7. **Dogfood TAP on TAP.** Once Phase 2 ships, the project itself runs on TAP — your own coordination with parallel agents goes through the daemon you're building.

@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: Apache-2.0
+
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: scope
+
+  - package-ecosystem: bundler
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build"
+
+  # Rust crates — registered once crates/ has Cargo.toml manifests.
+  - package-ecosystem: cargo
+    directory: "/crates/tap-protocol"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build"
+      include: scope
+
+  # Go modules — registered once pkg/ has go.mod files.
+  - package-ecosystem: gomod
+    directory: "/pkg/protocol"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build"
+      include: scope
+
+  # npm packages.
+  - package-ecosystem: npm
+    directory: "/packages/tap-protocol"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build"
+      include: scope

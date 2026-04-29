@@ -1,0 +1,12 @@
+# Generated bindings are committed for accessibility but should be collapsed
+# in diffs and excluded from language statistics on GitHub.
+crates/tap-protocol/src/generated/** linguist-generated=true
+pkg/protocol/generated/** linguist-generated=true
+packages/tap-protocol/src/generated/** linguist-generated=true
+protocol/schemas/_generated/** linguist-generated=true
+
+# Ensure consistent line endings across platforms.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

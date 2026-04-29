@@ -1,0 +1,44 @@
+# --- Bazel -----------------------------------------------------------------
+bazel-*
+!bazel-*.bzl
+.bazelrc.user
+
+# --- Rust ------------------------------------------------------------------
+target/
+**/*.rs.bk
+Cargo.lock
+
+# --- Go --------------------------------------------------------------------
+**/vendor/
+*.test
+*.out
+
+# --- JavaScript / TypeScript ----------------------------------------------
+node_modules/
+dist/
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+
+# --- CUE -------------------------------------------------------------------
+cue.mod/pkg/
+
+# --- Editors / OS ----------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Local development ----------------------------------------------------
+.env
+.env.local
+*.log
+.cache/
+.venv/
+
+# --- Codegen drift artifacts ----------------------------------------------
+# (Generated bindings ARE committed — see project-context.md §9.5.
+# This guards transient codegen scratch directories.)
+**/_codegen_scratch/

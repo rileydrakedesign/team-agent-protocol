@@ -1,0 +1,26 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.register missing developer_id",
+  "description": "Rejects an agent.register request with the required developer_id field absent.",
+  "schema_ref": "agent_register#AgentRegisterRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-2",
+    "method": "agent.register",
+    "params": {
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "machine_id": "fedcba9876543210fedcba9876543210",
+      "editor": "claude-code",
+      "session_id": "550e8400-e29b-41d4-a716-446655440000",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "main",
+      "worktree": "/Users/rileydrake/dev/team-agent-protocol",
+      "capabilities": []
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "developer_id is required by AgentRegisterParams. Missing required field maps to JSON-RPC -32602 (Invalid params)."
+}

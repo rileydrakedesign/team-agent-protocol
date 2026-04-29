@@ -1,0 +1,39 @@
+{
+  "name": "@tap/protocol",
+  "version": "0.1.0-draft",
+  "description": "TAP — Team Agent Protocol — TypeScript bindings, schemas, and envelope helpers",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tap-dev/tap.git",
+    "directory": "packages/tap-protocol"
+  },
+  "homepage": "https://tap.dev",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test --test-reporter=spec dist/test/*.test.js",
+    "lint": "eslint src",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.18.0"
+  }
+}

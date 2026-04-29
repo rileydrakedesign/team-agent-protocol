@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "cue_schemas",
+    srcs = glob(["*.cue"]),
+)
+
+# Convenience target for `bazel build //protocol/schemas:all`.
+alias(
+    name = "all",
+    actual = ":cue_schemas",
+)

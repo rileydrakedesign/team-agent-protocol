@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+"""
+TAP — Team Agent Protocol
+
+Root Bazel module. Dependencies are declared per-component as their build rules
+land. Phase 1 only needs bazel_skylib for the codegen pipeline; rules_rust,
+rules_go, aspect_rules_ts are added as the binding packages come online.
+"""
+
+module(
+    name = "tap",
+    version = "0.0.1",
+    compatibility_level = 1,
+)
+
+# Core utilities used by codegen rules.
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+
+# Language rules — added as components land. Versions pinned here so all of
+# them resolve from the Bazel Central Registry.
+bazel_dep(name = "rules_rust", version = "0.56.0")
+bazel_dep(name = "rules_go", version = "0.50.1")
+bazel_dep(name = "gazelle", version = "0.39.1")
+bazel_dep(name = "aspect_rules_js", version = "2.1.2")
+bazel_dep(name = "aspect_rules_ts", version = "3.4.0")
+
+# Rust toolchain — MSRV pinned. Bump deliberately, with rationale recorded in
+# project-context.md §9.5.
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    versions = ["1.82.0"],
+)
+use_repo(rust, "rust_toolchains")
+register_toolchains("@rust_toolchains//:all")
+
+# Go toolchain.
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.23.4")

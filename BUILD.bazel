@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Root package. Cross-cutting aliases live here as the build graph fills in.
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    ".bazelrc",
+    ".bazelversion",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+])
