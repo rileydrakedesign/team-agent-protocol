@@ -177,3 +177,193 @@ A new error code is added by RFC, allocated from the registry per [`../SPEC_STYL
 The MCP tool surface versions with the daemon, not with the wire protocol. The daemon's MCP server advertises its tool-surface version as `x-tap-tool-surface-version` in the MCP server descriptor; adapters check it on connect and refuse to attach if the major version is unsupported.
 
 The first version is `1.0.0`, shipped with Phase 2's daemon. Phase 4 introduces consult/messaging tools, which is a MINOR bump.
+
+---
+
+## 4. Tool catalog: awareness and conflict
+
+Tools the agent calls during normal coding flow. Read-only and advisory tools dominate; one tool per wire-protocol method, plus two convenience tools (`tap_peers_on_file`, `tap_conflicts_pending`) computed locally from the awareness cache.
+
+### 4.1 `tap_state_announce`
+
+- **Class:** advisory.
+- **Wire mapping:** [`state.announce`](../../protocol/SPEC.md#71-stateannounce-notification).
+- **Description.** Declares the agent's current branch and dirty-file state. Called by the adapter via the `PostToolUse` hook after the agent edits, and by the agent directly when it changes branch or declares an `intent`.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `branch` | string | yes | Current branch. |
+| `dirty_files` | object[] | yes | May be empty. Each entry: `{file, hunks[]}` per `protocol/schemas/common.cue#DirtyFile`. |
+| `intent` | string | no | Free-text, ≤ 256 chars, no control characters. |
+
+The daemon fills in `developer_id`, `agent_id`, `repo`, `worktree`, and `sequence` from the session.
+
+#### Output
+
+`{ ok: true }` on success; the wire method is a notification with no response, but the MCP tool returns an acknowledgment so the adapter can detect transport failures.
+
+#### Sandboxing
+
+Not applicable — no peer content.
+
+#### Example
+
+```json
+// tool call
+{ "name": "tap_state_announce",
+  "arguments": {
+    "branch": "feature/auth-refactor",
+    "dirty_files": [
+      { "file": "src/auth/oauth.rs",
+        "hunks": [{ "start_line": 12, "end_line": 48, "op": "modify" }] }
+    ],
+    "intent": "extracting OAuth flow"
+  } }
+// tool result
+{ "ok": true }
+```
+
+### 4.2 `tap_state_query`
+
+- **Class:** read-only.
+- **Wire mapping:** [`state.query`](../../protocol/SPEC.md#72-statequery-request--response).
+- **Description.** Returns a snapshot of awareness state at the requested scope. Used for "who else is on this repo?" lookups.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `branches` | string[] | no | Empty/absent → all branches in the agent's repo. |
+| `developers` | string[] | no | Empty/absent → all team members. |
+| `since` | timestamp | no | RFC 3339 UTC. Returns only records updated at or after. |
+
+The daemon fills in `repo` from the session.
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `records` | object[] | `#AgentAwarenessRecord[]`. May be empty. |
+| `partial` | bool | True if the daemon could only consult its local cache (e.g., relay disconnected). |
+| `snapshot_at` | timestamp | Server timestamp at snapshot. |
+
+#### Sandboxing
+
+`output.sandboxing.peer_content_fields = ["records[].intent"]`. Adapters MUST surface peer intent strings in a UI element (panel, hover, notification), never in the agent's prompt.
+
+### 4.3 `tap_peers_on_file`
+
+- **Class:** read-only.
+- **Wire mapping:** none (computed locally from the awareness cache; falls through to `state.query` if the cache is cold).
+- **Description.** Convenience tool for the most common pre-edit question: "who else is currently editing this file?". Avoids the agent having to filter `tap_state_query` results client-side.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `file` | string | yes | Path within the worktree, per `#FilePath`. |
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `peers` | object[] | One entry per `(developer_id, agent_id, branch)` touching the file. Each carries the peer's `intent` (sandboxed) and the count of overlapping hunks if computable. |
+| `partial` | bool | True if local-cache only. |
+
+#### Sandboxing
+
+`peer_content_fields = ["peers[].intent"]`.
+
+### 4.4 `tap_conflict_check`
+
+- **Class:** read-only.
+- **Wire mapping:** [`conflict.check`](../../protocol/SPEC.md#81-conflictcheck-request--response).
+- **Description.** **The critical hot path.** Called from the adapter's `PreToolUse` hook before any write. Returns conflict reports at the highest level reached within the latency budget. Sub-50 ms from local cache; sub-100 ms end-to-end per [`../../project-context.md` §3.3](../../project-context.md#33-service-level-objectives).
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `intended_writes` | object[] | yes | At least one `{file, hunks?}`. |
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `level_reached` | int | 1, 2, 3, or 4. |
+| `partial` | bool | True if higher levels timed out. |
+| `conflicts` | object[] | `#ConflictReport[]`. May be empty. |
+| `checked_at` | timestamp | |
+
+#### Sandboxing
+
+`peer_content_fields = ["conflicts[].message"]`. Conflict messages from the relay are operator-controlled in v0.1, but the contract treats them as peer content for forward compatibility with Phase 4.
+
+#### Hook posture
+
+Adapters MUST call this in `PreToolUse` for every write tool the agent invokes. A non-empty `conflicts` array SHOULD block the underlying write and surface the conflict to the developer; details in `rfcs/0030-claude-code-adapter.md`.
+
+### 4.5 `tap_conflict_declare`
+
+- **Class:** state-mutating.
+- **Wire mapping:** [`conflict.declare`](../../protocol/SPEC.md#82-conflictdeclare-request--response).
+- **Description.** Proactively declares "I'm about to edit X" so peer `tap_conflict_check` calls find it. Allocates a server-side `declaration_id` with a bounded TTL.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `targets` | object[] | yes | At least one `{file, hunks?}`. |
+| `ttl_seconds` | int | yes | 1–3600. Re-declare to extend. |
+| `reason` | string | no | Printable ASCII, ≤ 128 chars. |
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `declaration_id` | string | Opaque, prefix `tap_decl_`. |
+| `expires_at` | timestamp | |
+
+#### Sandboxing
+
+Not applicable — no peer content.
+
+### 4.6 `tap_conflict_release`
+
+- **Class:** state-mutating.
+- **Wire mapping:** [`conflict.release`](../../protocol/SPEC.md#83-conflictrelease-notification).
+- **Description.** Releases a declaration ahead of its TTL. Optimization; declarations also expire automatically.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `declaration_id` | string | yes | The id returned by `tap_conflict_declare`. |
+
+#### Output
+
+`{ ok: true }`.
+
+### 4.7 `tap_conflicts_pending`
+
+- **Class:** read-only.
+- **Wire mapping:** none (locally maintained from `conflict.notify` notifications received since last call).
+- **Description.** Returns the queue of conflict notifications the daemon has received for the agent and not yet shown. Lets the agent fetch outstanding notifications between hook invocations without subscribing to every server push.
+
+#### Input
+
+(none)
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `notifications` | object[] | One entry per pending `conflict.notify`. Each carries the wire-method `params` plus a daemon-issued `notification_id` and `received_at`. |
+
+The agent MAY pass a `notification_id` to a future `tap_conflicts_ack` (Phase 2 follow-up) to acknowledge; in v0.1, the daemon clears pending notifications after they have been read once.
+
+#### Sandboxing
+
+`peer_content_fields = ["notifications[].conflicts[].message"]`.
