@@ -367,3 +367,136 @@ The agent MAY pass a `notification_id` to a future `tap_conflicts_ack` (Phase 2 
 #### Sandboxing
 
 `peer_content_fields = ["notifications[].conflicts[].message"]`.
+
+---
+
+## 5. Tool catalog: introspection, policy, audit
+
+Tools the agent calls to ground itself: who am I, who else is on the team, what policy applies, what just happened. All read-only.
+
+### 5.1 `tap_session_info`
+
+- **Class:** read-only.
+- **Wire mapping:** none (returns daemon-side session state populated at `agent.register` time).
+- **Description.** Returns the agent's own session metadata. Useful at the start of an agent run to confirm the daemon is reachable, the relay is connected, and the negotiated protocol version is known.
+
+#### Input
+
+(none)
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `developer_id` | string | §4.1 of the wire spec. |
+| `agent_id` | string | §4.2. |
+| `repo` | string | Canonical repo URL. |
+| `branch` | string | Current branch as known to the daemon. |
+| `awareness_scope` | object | Echo of the scope negotiated at `agent.register`. |
+| `tap_version` | string | Negotiated protocol version. |
+| `daemon_version` | string | The daemon binary's semver. |
+| `tool_surface_version` | string | Per §3.9. |
+| `relay_connected` | bool | False when the daemon is operating local-only. |
+| `relay_last_connected_at` | timestamp | Optional. Present after the first successful relay session. |
+
+#### Sandboxing
+
+Not applicable.
+
+### 5.2 `tap_peers_list`
+
+- **Class:** read-only.
+- **Wire mapping:** none (computed from the awareness cache).
+- **Description.** Returns peers visible in the agent's awareness scope, with their online status and most recent branch. Lets an agent answer "who's around?" without a full `tap_state_query`.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `online_only` | bool | no | Default `false`. When `true`, returns only peers with at least one connected agent. |
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `peers` | object[] | Each: `{developer_id, online, agents: [{agent_id, branch, last_heartbeat_at}]}`. |
+| `partial` | bool | True if local-cache only. |
+
+#### Sandboxing
+
+Not applicable. Peer identifiers are infrastructure data, not free-text content from peer agents.
+
+### 5.3 `tap_policy_get`
+
+- **Class:** read-only.
+- **Wire mapping:** none (the daemon's local policy engine; see [`../../project-context.md` §4.1](../../project-context.md#41-subsystems)).
+- **Description.** Returns the policy snapshot active for the agent's current repo. Lets an agent know, before invoking a higher-scope tool (e.g., a Phase 4 consult), whether it will be auto-approved, prompt the developer, or be denied outright.
+
+#### Input
+
+(none)
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `repo` | string | Repo the policy applies to. |
+| `messaging` | object | Effective rate-limit and auto-approve config. |
+| `consults` | object | Effective inbound-scope cap, auto-summarize-after-turns. (Phase 4 fields; v0.1 returns conservative defaults.) |
+| `redaction.exclude_files` | string[] | Glob patterns excluded from outbound bundles. |
+| `source_files` | string[] | Paths the daemon merged to produce this view (user-global, per-repo). For introspection only. |
+
+The full policy DSL is specified in `rfcs/0206-policy-dsl.md` (Phase 4). v0.1 implementations return the conservative subset corresponding to the Phase 1–2 surface.
+
+#### Sandboxing
+
+Not applicable. Policy data is operator-controlled, never peer-controlled.
+
+### 5.4 `tap_recent_activity`
+
+- **Class:** read-only.
+- **Wire mapping:** none (daemon-side rolling buffer of awareness events).
+- **Description.** Returns the most recent awareness events the daemon has observed: peers attaching/detaching, branch switches, conflict notifications. Bounded to the last ≤ 100 events or the last 5 minutes, whichever is shorter. Intended for debugging and for UI surfaces (e.g., the dashboard's activity panel rendered through the adapter); not for production decision-making by the agent.
+
+#### Input
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `limit` | int | no | 1–100. Default 20. |
+| `since` | timestamp | no | RFC 3339. Returns only events at or after. |
+
+#### Output
+
+| Field | Type | Notes |
+|---|---|---|
+| `events` | object[] | Each: `{kind, occurred_at, developer_id?, agent_id?, branch?, file?, summary}`. `kind` ∈ `{agent_attached, agent_detached, state_changed, conflict_detected, conflict_released}`. |
+| `truncated` | bool | True if more events were available than the limit. |
+
+#### Sandboxing
+
+`peer_content_fields = ["events[].summary"]`. The daemon constructs `summary` strings from peer-controlled fields (intent, conflict message); they MUST flow to a UI element only.
+
+---
+
+## 6. Phase 4 tools (placeholder)
+
+Phase 4 introduces messaging, consults, tasks, trust, and approval gates. The tool surface gains the following names; full specifications live in `rfcs/0201-consults-design.md`, `rfcs/0200-messaging.md`, `rfcs/0203-task-handoff.md`, `rfcs/0204-trust-graph.md`, and `rfcs/0205-approval-gates.md`. Listing them here reserves the names against accidental collision and makes the v1.x evolution path explicit.
+
+| Name | Class | Wire mapping |
+|---|---|---|
+| `tap_message_send` | state-mutating | `msg.send` |
+| `tap_messages_pending` | read-only | (locally maintained from `msg.deliver`) |
+| `tap_consult_request` | state-mutating | `consult.request` |
+| `tap_consult_message` | state-mutating | `consult.message` |
+| `tap_consult_resolve` | state-mutating | `consult.resolve` |
+| `tap_consult_observe` | read-only | `consult.observe` |
+| `tap_consult_pending` | read-only | (locally maintained) |
+| `tap_task_handoff` | state-mutating | `task.handoff` |
+| `tap_task_update` | state-mutating | `task.update` |
+| `tap_trust_grant` | state-mutating | `trust.grant` |
+| `tap_trust_revoke` | state-mutating | `trust.revoke` |
+| `tap_approval_respond` | state-mutating | `approval.respond` |
+
+All Phase 4 tools that surface peer content (every consult and message tool) carry a non-empty `peer_content_fields` array. Phase 4's adapter conformance tests verify the sandboxing rule against this surface; v0.1 adapters do not implement these tools and simply do not register them.
+
+Adding the Phase 4 surface is a MINOR tool-surface bump (1.0.x → 1.1.0). v1.0 adapters continue to function against a v1.1 daemon; they see only the v1.0 tools.
