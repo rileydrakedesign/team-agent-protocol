@@ -178,6 +178,61 @@ The MCP tool surface versions with the daemon, not with the wire protocol. The d
 
 The first version is `1.0.0`, shipped with Phase 2's daemon. Phase 4 introduces consult/messaging tools, which is a MINOR bump.
 
+### 3.10 Token-aware adapter conventions
+
+Every TAP tool result the agent reads costs context tokens. Naïve adapter conventions — "auto-inject full team awareness at every turn" — produce ~100k+ tokens of TAP-derived content over a 30-turn session on a 20-developer team, which is unacceptable. This section is normative and binding for any adapter.
+
+#### 3.10.1 Pull, do not push, by default
+
+- The adapter MUST NOT auto-call `tap_state_query`, `tap_peers_list`, or `tap_recent_activity` at any hook unless the developer has explicitly opted in through adapter configuration.
+- The adapter MUST call `tap_conflict_check` in `PreToolUse` for every write tool the agent invokes. This is the hot path; cost is bounded (≤ 60 tokens per no-conflict reply per §4.4) and value is high.
+- The adapter SHOULD call `tap_conflicts_pending` and `tap_consult_pending` between turns *only* when the session-start banner (§3.10.2) reports pending items, or in response to a server-pushed signal (Phase 5+; pull-only in v1.0).
+
+#### 3.10.2 Session-start banner
+
+At `SessionStart`, the adapter MAY inject a single one-line banner of TAP state. The banner is a daemon-synthesized natural-language summary obtained via `tap_session_info` plus a count of pending events. Bounded to ≤ 30 tokens. Example:
+
+```
+TAP: 4 peers online in this repo, 0 conflicts on your branch, 0 pending.
+```
+
+The banner is the cheap signal that tells the agent whether the deeper (more expensive) tools are worth calling. Without pending events, the agent never pays for them.
+
+#### 3.10.3 Synthesize, do not serialize, by default
+
+Every tool whose output may include peer-derived state takes a `format` input field with values `summary` (default) and `structured`. See §4.
+
+- `summary` returns daemon-synthesized natural-language prose. Compact (5-10× cheaper than structured), losslessly compactable by the editor's context-compaction layer.
+- `structured` returns the full schema as documented per tool. Consumers explicitly opt in when they need to compute on the data (rare for agents; common for the dashboard).
+
+The adapter MUST NOT override the default. If an agent wants structured data, it asks for it explicitly.
+
+#### 3.10.4 Minimal payload on the hot path
+
+`tap_conflict_check` returns a minimal-payload form on no-conflict (§4.4). This is the single highest-frequency call in the system and must remain effectively free.
+
+#### 3.10.5 Digest by default for pending queues
+
+`tap_conflicts_pending`, `tap_consult_pending`, and `tap_messages_pending` (Phase 4) default to digest mode: a one-line summary per pending item, with an opaque handle. The agent calls an `_expand` companion tool with a handle when it decides to look at one. Pre-expansion cost: ~30 tokens for a queue of three items. Post-expansion: ~200 tokens for the one item the agent acted on. Without digest mode, the same three items expanded is ~600 tokens.
+
+#### 3.10.6 Subscription scope tightening
+
+The adapter SHOULD set `agent.register.params.awareness_scope.branches` to the agent's current branch plus a small set of likely-merge-target branches (computed from recent merge history) at registration. This narrows the volume of `state.diff` notifications the daemon must absorb in the first place, which in turn shrinks every downstream pull's response.
+
+The adapter MUST NOT subscribe to `branches: []` (all branches) by default. That is reserved for the dashboard and the admin console.
+
+#### 3.10.7 Compaction-aware rendering
+
+Where the editor's MCP protocol supports it, every TAP tool result other than the blocking `tap_conflict_check` result MUST be tagged `compactable: true`. This signals the editor's compaction layer that the result is informational and may be summarized aggressively or dropped entirely on subsequent turns. The blocking conflict report stays in context until the agent has acted on it.
+
+#### 3.10.8 Token budget
+
+The adapter SHOULD enforce a per-session TAP context budget (recommended default: 5,000 tokens of TAP-derived content steady state, excluding consult bundle contents the agent explicitly fetched). When the budget would be exceeded, the adapter switches further pulls to digest-only mode and surfaces a notification through the editor's UI rather than the agent's context.
+
+#### 3.10.9 Conformance
+
+Phase 2 adds a token-budget conformance test to the Claude Code adapter test suite: a synthetic 20-peer team with active awareness state, and a measurement that the adapter introduces ≤ 100 tokens per turn of TAP-derived content in steady-state operation (no pending events, agent doing routine edits). Phase 5 extends the test to every other adapter.
+
 ---
 
 ## 4. Tool catalog: awareness and conflict
