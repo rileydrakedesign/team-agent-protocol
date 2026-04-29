@@ -71,3 +71,109 @@ Three properties anchor the design:
 - Tools that initiate a consult, message, or task handoff. Those are Phase 4 surfaces and live in a separate RFC (`rfcs/0201-consults-design.md`).
 - Editor-specific configuration. Each adapter's `INTERFACES.md` covers that.
 - Plumbing for human-in-the-loop approval prompts. That is the daemon ↔ desktop OS surface, not the agent ↔ daemon surface.
+
+---
+
+## 3. Design
+
+### 3.1 Architecture
+
+```
+┌──────────────────────┐        ┌──────────────────────┐
+│   Editor (e.g.       │        │   Local daemon       │
+│   Claude Code)       │        │                      │
+│                      │        │  ┌────────────────┐  │
+│  ┌────────────────┐  │  MCP   │  │ MCP server     │  │
+│  │ Agent + tools  │◀─┼────────┼─▶│ (this RFC)     │  │
+│  │  (LLM)         │  │ (UDS)  │  └────────┬───────┘  │
+│  └────────────────┘  │        │           │          │
+│         ▲            │        │  ┌────────▼───────┐  │
+│         │ hooks      │        │  │ git state /    │  │
+│  ┌──────┴─────────┐  │        │  │ awareness /    │  │
+│  │ Adapter        │──┼────────┼─▶│ conflict /     │  │
+│  │ (per editor)   │  │        │  │ policy / audit │  │
+│  └────────────────┘  │        │  └────────────────┘  │
+└──────────────────────┘        └──────────────────────┘
+```
+
+The daemon hosts a single MCP server. Adapters register that server with the editor's MCP-client surface. When the editor invokes a tool, the call flows over a Unix domain socket (Linux/macOS) or a named pipe (Windows) to the daemon, which dispatches to its internal subsystems (git state engine, awareness cache, conflict orchestrator, policy engine, audit log).
+
+This RFC specifies only the agent ↔ daemon contract (the dashed arrow). The editor ↔ adapter and adapter ↔ daemon-MCP-server hops are documented in `docs/components/adapters/<editor>/` per Phase 2.
+
+### 3.2 Transport
+
+The daemon's MCP server speaks MCP over a local IPC channel:
+
+- **Linux / macOS:** Unix domain socket at `$XDG_RUNTIME_DIR/tap/daemon.sock` (Linux) or `~/Library/Application Support/tap/daemon.sock` (macOS). The path is exported as `$TAP_DAEMON_SOCKET` for adapters that prefer environment-variable discovery.
+- **Windows:** named pipe at `\\.\pipe\tap-daemon-<user-sid>`. Same `$TAP_DAEMON_SOCKET` discovery.
+- **Framing:** MCP's standard JSON-RPC framing. TAP's wire envelope (`protocol/SPEC.md` §3) is used between daemon and relay; **MCP framing is used between daemon and agent**. The two are deliberately distinct: MCP is the editor-side IPC convention, TAP is the network protocol.
+- **Authentication:** none at the transport layer. Process-local trust boundary per [`../../protocol/SPEC.md`](../../protocol/SPEC.md) §2.2.
+- **Permissions:** the daemon enforces socket permissions `0700` and verifies the caller's UID matches the daemon's owner. Foreign-UID connects are refused.
+
+### 3.3 Discovery
+
+Adapters discover the daemon by, in order:
+
+1. `$TAP_DAEMON_SOCKET`, if set.
+2. The platform-default path (§3.2).
+3. If neither resolves to a connectable endpoint, the adapter MUST surface a clear error and SHOULD link to the daemon installation guide. Adapters MUST NOT silently degrade to a no-op state.
+
+### 3.4 Tool naming convention
+
+All TAP tools are prefixed `tap_`. Names use snake_case. The category appears as the second word; the action appears third.
+
+- `tap_state_announce`, `tap_state_query`
+- `tap_conflict_check`, `tap_conflict_declare`, `tap_conflict_release`
+- `tap_session_info`, `tap_peers_list`, `tap_policy_get`
+
+Names are stable per [`../VERSIONING.md`](../VERSIONING.md): renames require a MAJOR bump; adding tools is MINOR.
+
+### 3.5 Schema conventions
+
+Every tool declares input and output schemas as JSON Schema, derived 1:1 from the relevant CUE definitions in `protocol/schemas/`. The mapping is mechanical; any mismatch is a bug in the codegen pipeline (RFC `0001-codegen-pipeline.md`).
+
+Two notes:
+
+- **Inputs are validated by the daemon before dispatch.** An adapter that sends a malformed payload receives an MCP error (JSON-RPC error code `-32602`, mirroring the wire-protocol error).
+- **Outputs are validated by the daemon before reply.** A daemon that produces a malformed reply has a bug; the adapter MAY reject it and the daemon SHOULD log it.
+
+### 3.6 Side-effect classification
+
+Every tool declares a side-effect class. Adapters use this to decide how aggressively to gate execution behind hook flows.
+
+| Class | Meaning | Hook posture |
+|---|---|---|
+| `read_only` | No state mutation; safe to call freely. | No `PreToolUse` gate required. |
+| `advisory` | Records caller intent; relay state changes; reversible. | `PreToolUse` MAY gate; recommended quiet. |
+| `state_mutating` | Allocates a server-side handle (declaration, subscription) or sends a message that influences peer behavior. | `PreToolUse` SHOULD gate; auditable. |
+
+The classification is independent of the wire-protocol method's idempotency. `tap_conflict_check` is a wire-level request/response but its tool class is `read_only` because it does not mutate awareness state.
+
+### 3.7 Sandboxing contract for outputs
+
+Every tool whose output may carry **peer-originated content** declares so explicitly via an `output.sandboxing.peer_content_fields` array in its tool descriptor. Fields named there carry strings the receiving agent's adapter MUST NOT interpolate into the agent's prompt. The adapter's responsibility is to:
+
+1. Surface those fields through the editor's UI (notification, panel, structured tool-result block) — never as part of the system prompt or user message.
+2. If the editor offers no UI primitive that supports this, the adapter MUST replace the field with a stable placeholder (`<peer content elided>`) and surface the original through a side channel (logs, dedicated panel) the agent cannot read.
+
+This rule is the operationalization of [`../THREAT_MODEL.md`](../THREAT_MODEL.md) §5 at the editor boundary. Adapter conformance tests (Phase 2 for Claude Code, Phase 5 for the rest) verify it.
+
+### 3.8 Error model
+
+Tools return errors via MCP's tool-result error mechanism. Error payloads carry a `code` matching the TAP wire-protocol error registry (`protocol/SPEC.md` §13) and a `message`. Common cases:
+
+| Code | When |
+|---|---|
+| `-32602` | Invalid params (malformed input). |
+| `1010` | Rate limited. |
+| `1020` | Policy denied (e.g., scope above caller's trust level). |
+| `1030` | Repo not opted in. |
+| `2001` | Daemon not connected to relay (Phase 3+); `tap_state_query` returns local-cache-only data with a `partial: true` flag instead, when applicable. |
+
+A new error code is added by RFC, allocated from the registry per [`../SPEC_STYLE.md`](../SPEC_STYLE.md) §5.
+
+### 3.9 Versioning
+
+The MCP tool surface versions with the daemon, not with the wire protocol. The daemon's MCP server advertises its tool-surface version as `x-tap-tool-surface-version` in the MCP server descriptor; adapters check it on connect and refuse to attach if the major version is unsupported.
+
+The first version is `1.0.0`, shipped with Phase 2's daemon. Phase 4 introduces consult/messaging tools, which is a MINOR bump.
