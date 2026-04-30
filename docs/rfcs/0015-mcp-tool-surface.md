@@ -605,6 +605,24 @@ Phase 4 introduces messaging, consults, tasks, trust, and approval gates. The to
 
 All Phase 4 tools that surface peer content (every consult and message tool) carry a non-empty `peer_content_fields` array. Phase 4's adapter conformance tests verify the sandboxing rule against this surface; v0.1 adapters do not implement these tools and simply do not register them.
 
+### 6.1 Lazy-bundle convention (binding for Phase 4 tools)
+
+This section reserves the design pattern for context bundles in advance, so that Phase 4 RFCs (`0201-consults-design.md`, `0202-context-bundle-format.md`, `0200-messaging.md`) inherit a consistent token-aware shape rather than re-litigating it.
+
+A context bundle is the package of files, diffs, and references that travels with a `consult.request` or a high-payload `msg.send`. Bundles can be tens of thousands of tokens — diffs across multiple files, snippets, declared file lists. Inlining bundle contents into the recipient agent's tool result would blow the context budget on a single inbound consult.
+
+The binding convention:
+
+- **Bundles travel by handle, never inline.** The wire layer uses content-addressing per [`../../project-context.md` §5.2](../../project-context.md#52-storage); the MCP layer surfaces the bundle as a *reference* (`bundle_id`) plus a daemon-synthesized one-paragraph summary (file list, line counts, declared topic). The agent's first turn on a consult sees ≤ 200 tokens of bundle metadata, not the bundle itself.
+- **Lazy fetch via companion tool.** A `tap_consult_bundle_get(bundle_id, file_path)` companion tool returns a single file's content on demand. The agent calls it only when it has decided that file is relevant to its reasoning. Cost is paid per-file fetched, not per-bundle received.
+- **Manifest is cheap, contents are not.** A `tap_consult_bundle_manifest(bundle_id)` companion returns the list of files and line counts without contents. Bounded to ≤ 300 tokens. Lets the agent decide *which* files to fetch before paying for any.
+- **Daemon-side scope enforcement.** Per-consult derived keys plus relay-enforced ACLs mean a `bundle_get` call is authorized only for bundles addressed to the recipient. An attacker who guesses a `bundle_id` cannot read it.
+- **Same pattern for messaging.** `msg.send` payloads above a small inline threshold (proposed: 1 KB) use the same handle pattern; small payloads inline as before.
+
+Phase 4 RFCs MAY refine the threshold and the companion-tool surface but MUST NOT remove the lazy-bundle convention. Removing it would re-introduce the token-blowback risk this RFC's §3.10 was written to prevent.
+
+### 6.2 Versioning
+
 Adding the Phase 4 surface is a MINOR tool-surface bump (1.0.x → 1.1.0). v1.0 adapters continue to function against a v1.1 daemon; they see only the v1.0 tools.
 
 ---
