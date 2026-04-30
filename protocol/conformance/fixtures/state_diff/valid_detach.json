@@ -1,0 +1,27 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.diff valid detach with reason",
+  "description": "Single change detaching an agent. Reason advisory; record absent.",
+  "schema_ref": "state_diff#StateDiff",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.diff",
+    "params": {
+      "subscription_id": "tap_sub_AaBbCcDdEeFfGgHhIiJjKk1234",
+      "sequence": 4131,
+      "emitted_at": "2026-04-29T17:37:14Z",
+      "changes": [
+        {
+          "kind": "agent_detached",
+          "developer_id": "samchen",
+          "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+          "reason": "disconnect:idle_timeout"
+        }
+      ]
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

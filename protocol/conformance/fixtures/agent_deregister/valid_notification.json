@@ -1,0 +1,19 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.deregister valid notification",
+  "description": "Clean-shutdown notification with an advisory reason string.",
+  "schema_ref": "agent_deregister#AgentDeregister",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.deregister",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "reason": "user_quit"
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

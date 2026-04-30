@@ -1,0 +1,33 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.announce rejects file path traversal",
+  "description": "FilePath rejects '..' segments to prevent escape from the worktree namespace.",
+  "schema_ref": "state_announce#StateAnnounce",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.announce",
+    "params": {
+      "repo": "https://github.com/tap-dev/tap.git",
+      "sequence": 1,
+      "record": {
+        "developer_id": "rileydrake",
+        "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "branch": "main",
+        "worktree": "/Users/rileydrake/dev/tap",
+        "dirty_files": [
+          {
+            "file": "../../etc/passwd",
+            "hunks": [
+              { "start_line": 1, "end_line": 1, "op": "modify" }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Defends against awareness-state poisoning via crafted file paths; ties into the broader sandboxing posture in docs/THREAT_MODEL.md §5."
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.subscribe valid request",
+  "description": "Subscription scoped to one repo, all branches and developers; no since_sequence (full snapshot expected).",
+  "schema_ref": "state_subscribe#StateSubscribeRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-201",
+    "method": "state.subscribe",
+    "params": {
+      "scope": {
+        "repo": "https://github.com/tap-dev/tap.git"
+      }
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

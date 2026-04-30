@@ -1,0 +1,21 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "sandboxing rejects detail exceeding length bound",
+  "description": "agent.disconnect.detail is bounded to 256 printable ASCII characters. Length bypass is a classic amplification vector; the schema enforces the cap.",
+  "schema_ref": "agent_disconnect#AgentDisconnect",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.disconnect",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "reason": "policy_violation",
+      "detail": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Pattern: length amplification. Bounded fields fail closed."
+}

@@ -475,11 +475,34 @@ Each phase is a coherent milestone with explicit ship criteria. No time estimate
 
 ### 9.2 Current task
 
-Phase 1 scaffolding landed (2026-04-28). Next: validate the codegen pipeline end-to-end and complete the Phase 2 message subset in the spec.
+Phase 1 wire-format spec complete (2026-04-29): SPEC.md §6–§8 fully populated, eleven new CUE schemas, ~30 conformance fixtures including the sandboxing corpus, Phase 1 doc bundle stood up, RFC 0015 (MCP tool surface) drafted out of order. Foundation documentation system landed earlier the same day. Phase 1 scaffolding landed (2026-04-28). Next: install codegen toolchain locally and produce real bindings, wire doc lints in CI, validate the Phase 1 ship criterion with an external implementer.
 
 ### 9.3 Immediate next steps
 
-**Done in this session (2026-04-28):**
+**Done in this session (2026-04-29) — wire-format + RFC 0015:**
+
+- ✅ Phase 1 wire-format spec finished. `protocol/SPEC.md` §6 (lifecycle) expanded with field tables, schema cross-refs, and examples. §7 (awareness) and §8 (conflict) replaced placeholders with full normative sections. Appendix A change log updated.
+- ✅ Eleven new CUE schemas in `protocol/schemas/`: `common.cue` (shared `#Hunk`, `#DirtyFile`, `#AwarenessScope`, `#SubscriptionId`, `#ConflictLevel`, `#Confidence`, `#TtlSeconds`, `#Timestamp`, `#Intent`, `#FilePath`), `agent_heartbeat.cue`, `agent_deregister.cue`, `agent_disconnect.cue`, `state_announce.cue` (carries `#AgentAwarenessRecord`), `state_query.cue`, `state_subscribe.cue`, `state_diff.cue`, `conflict_check.cue` (carries `#ConflictReport`, `#IntendedWrite`, `#PeerRef`, `#HunkOverlap`), `conflict_declare.cue`, `conflict_release.cue`, `conflict_notify.cue`.
+- ✅ ~30 conformance fixtures across the new schemas — every CUE definition gets at least one positive and one negative case. Negatives target real failure modes (inverted hunk ranges, path traversal, oversized TTLs, malformed declaration ids, confidence out of range, missing scope, empty required lists).
+- ✅ Sandboxing fixture corpus at `protocol/conformance/fixtures/sandboxing/`: five negative fixtures (NUL byte, ANSI escape, RTL override, ASCII control char, length-bound bypass) and two accepted-but-dangerous positive fixtures (literal-text injection, fake-tool-result framing). README explains the schema-vs-consumer-layer split. Closes the Phase 1 deliverable from `docs/THREAT_MODEL.md` §5.3.
+- ✅ Phase 1 doc bundle stood up at `docs/phases/phase-1/` from `_template/`: README (scope, ship criterion operationalized), test-plan, perf-budget, threat-model addendum, migration (N/A first phase), open-questions (5 entries: canonicalization rule, suite-version file, hermetic toolchains deferred to Phase 2, tap.dev needed for ship-criterion, A2A verification cadence), decisions, exit checklist.
+- ✅ `docs/rfcs/0015-mcp-tool-surface.md` — out-of-order Phase 2 RFC authored in Phase 1. Specifies the daemon's MCP server contract: 11 v1.0 tools (state_announce, state_query, peers_on_file, conflict_check, conflict_declare, conflict_release, conflicts_pending, session_info, peers_list, policy_get, recent_activity) plus 12 reserved Phase 4 names. Covers transport (UDS / named pipe + UID check), discovery, schema validation, side-effect classification (`read_only` / `advisory` / `state_mutating`), the sandboxing-contract `peer_content_fields` declaration, error model, tool-surface versioning, alternatives (5), drawbacks, migration, security (STRIDE delta), 5 open questions.
+
+**Done in prior session (2026-04-29) — foundation docs:**
+
+- ✅ Foundation documentation system: doc taxonomy (six layers), per-phase doc spine (eight files), RFC numbering policy, YAML front-matter convention, one-fact-one-place rule, doc-dashboard / staleness gating. All described in `docs/DOCUMENTATION_PLAN.md`.
+- ✅ Doc index `docs/README.md` — entry point with by-role guides and source-of-truth registry.
+- ✅ Canonical glossary `docs/GLOSSARY.md` extracted from §10. §10 of this document is now a stub linking to the canonical glossary.
+- ✅ Spec style guide `docs/SPEC_STYLE.md` — RFC 2119 vocabulary, snake_case method/field naming, error-code allocation, schema-prose-fixture coupling.
+- ✅ Versioning policy `docs/VERSIONING.md` — promoted from `protocol/SPEC.md` §5; MAJOR/MINOR/PATCH semantics, negotiation algorithm, deprecation window, N-1 support, suite-version pinning.
+- ✅ RFC process `docs/RFC_PROCESS.md` — lifecycle, required sections, reviewer rules, numbering ranges. Template at `docs/rfcs/0000-template.md`.
+- ✅ Conformance policy `docs/CONFORMANCE.md` — implementation classes, runner contract, attestation format, trademark policy, dispute resolution.
+- ✅ A2A mapping `docs/A2A_MAPPING.md` (draft) — conforming / extending / deviating taxonomy. `[verify]` markers for items requiring upstream A2A spec confirmation.
+- ✅ Public roadmap `docs/ROADMAP.md` — phase-by-phase mirror of §8 for external readers.
+- ✅ Risk register `docs/RISK_REGISTER.md` — 18 cross-phase risks (technical, security, market, organizational, legal/compliance) with severity, owner, mitigation, status.
+- ✅ Templates: `docs/phases/_template/` (eight-file spine), `docs/runbooks/_template.md`, `docs/components/_template/` (ARCHITECTURE, CONFIG, OPERATING, SECURITY, INTERFACES).
+
+**Done in prior session (2026-04-28):**
 
 - ✅ Monorepo structure scaffolded: `protocol/`, `crates/tap-protocol/`, `pkg/protocol/`, `packages/tap-protocol/`, `tools/codegen/`, `docs/`, `.github/`.
 - ✅ Bazel + bzlmod foundation: `MODULE.bazel`, `.bazelrc`, `.bazelversion` (7.4.1), root `BUILD.bazel`, `.gitignore`, `.gitattributes`, `.editorconfig`, `LICENSE` (Apache 2.0), `NOTICE`, `README.md`.
@@ -492,14 +515,14 @@ Phase 1 scaffolding landed (2026-04-28). Next: validate the codegen pipeline end
 - ✅ Per-language conformance test runners: `crates/tap-protocol/tests/conformance.rs`, `pkg/protocol/conformance_test.go`, `packages/tap-protocol/src/test/conformance.test.ts`. Currently exercise structural round-trip; per-schema typed assertions get added once codegen runs locally.
 - ✅ `docs/THREAT_MODEL.md` covering assets, trust boundaries, adversaries, STRIDE-style decomposition, sandboxing of inbound agent messages (the "structured envelope, never raw prompt prepending" rule), supply chain, cryptographic primitives.
 
-**Next:**
+**Next (per the authorship order in `docs/DOCUMENTATION_PLAN.md` §9):**
 
-1. Install the codegen toolchain locally (`cue`, `typify`, `json-schema-to-typescript`) and run `bazel run //tools/codegen:generate` to produce the first real bindings. Commit them. Verify `bazel test //...` is green across all three languages.
-2. Specify the remaining lifecycle messages (`agent.heartbeat`, `agent.deregister`, `agent.disconnect`) in CUE and `SPEC.md`. Add fixtures.
-3. Specify awareness messages (`state.announce`, `state.query`, `state.subscribe`, `state.diff`) in CUE and `SPEC.md`. Add fixtures.
-4. Specify conflict messages (`conflict.check`, `conflict.declare`, `conflict.release`, `conflict.notify`) in CUE and `SPEC.md`. Add fixtures.
-5. Wire `git init` + initial commit. Push to GitHub. Enable branch protection on `main` (signed commits, required reviews, required CI checks).
-6. Validate Phase 1 ship criterion: hand the spec + schemas + conformance suite to an external engineer and confirm they can produce a passing client without reading TAP source.
+1. **Install the codegen toolchain locally** (`cue`, `typify`, `json-schema-to-typescript`) and run `bazel run //tools/codegen:generate` to produce the first real bindings. Commit them. Verify `bazel test //...` is green across all three languages. Update the per-language conformance runners (`crates/tap-protocol/tests/conformance.rs`, `pkg/protocol/conformance_test.go`, `packages/tap-protocol/src/test/conformance.test.ts`) to execute the ~30 new fixtures added in this batch.
+2. **Doc lints in CI.** Wire `markdownlint`, `vale`, and the custom `tools/doclint/` checks specified in `docs/DOCUMENTATION_PLAN.md` §10.1. Initially advisory on legacy doc paths per §11.
+3. **Resolve the Phase 1 open questions** in `docs/phases/phase-1/open-questions.md`: pick a round-trip canonicalization rule (Q-1-001), land `protocol/conformance/VERSION` (Q-1-002), confirm the `tap.dev` provisioning question (Q-1-004), and verify the `[verify]` items in `docs/A2A_MAPPING.md` against the live A2A spec (Q-1-005).
+4. **Author the next critical-path Phase 2 RFC: `rfcs/0030-claude-code-adapter.md`.** Consumes RFC 0015 and the daemon RFCs that come next. Defines hook contracts (`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`), MCP server registration with Claude Code, and the adapter-side conformance tests for the §3.7 sandboxing contract.
+5. **Branch protection on `main`.** Configure once permissions allow: required signed commits, two-reviewer approval for `protocol/` and `tools/codegen/`, required CI checks, no force-push.
+6. **Validate Phase 1 ship criterion:** hand the spec + schemas + conformance suite + foundation docs to an external engineer and confirm they can produce a passing client without reading TAP source. Operationalized in `docs/phases/phase-1/exit.md` §1.
 
 ### 9.4 Open questions
 
@@ -522,6 +545,21 @@ Phase 1 scaffolding landed (2026-04-28). Next: validate the codegen pipeline end
 - **2026-04-28 — Bazel remote cache deferred.** Local cache sufficient for Phase 1 build size. Add BuildBuddy free tier when CI builds exceed ~5 minutes (likely Phase 2 daemon work).
 - **2026-04-28 — Bazel version pinned to 7.4.1.** Stable bzlmod, all rule ecosystems we need (rules_rust, rules_go, aspect_rules_ts) validated. Bumped via `.bazelversion` deliberately.
 - **2026-04-28 — Rust MSRV 1.82, Go 1.23, Node 20.18 LTS.** Recent stable, well-supported by Bazel rule ecosystems.
+- **2026-04-29 — Documentation taxonomy: six layers.** Foundation, Phase, RFC, Component, Runbook, Wire-format spec. Each layer has a defined location, lifecycle, and template. Specified in `docs/DOCUMENTATION_PLAN.md`. Rationale: end-to-end coverage across six phases requires a repeatable structure rather than ad-hoc per-phase documents. Alternatives rejected: single growing file (unscalable), free-form per-phase (inconsistent over time).
+- **2026-04-29 — Phase doc spine.** Every phase produces the same eight files (README, test-plan, perf-budget, threat-model, migration, open-questions, decisions, exit). Templates at `docs/phases/_template/`. Phase exits gate on the spine being complete and on `last-reviewed` freshness. Same approach for components (`docs/components/_template/`) and runbooks (`docs/runbooks/_template.md`).
+- **2026-04-29 — RFC numbering by phase.** RFCs use 4-digit prefixes; ranges pre-allocated to phases (Phase 1: 0001-0009, Phase 2: 0010-0099, Phase 3: 0100-0199, Phase 4: 0200-0299, Phase 5: 0300-0399, Phase 6: 0400-0499, continuing concerns: 0900-0999). Process specified in `docs/RFC_PROCESS.md`. Numbers reserved on RFC creation, never reused.
+- **2026-04-29 — YAML front-matter on all new docs.** Schema: `status` (draft/accepted/implemented/superseded/withdrawn), `phase`, `owners`, `last-reviewed`, plus optional `supersedes`/`related`/RFC-specific fields. CI lints once `tools/doclint/` lands. Existing docs migrate the next time they are touched (no bulk-migration commit).
+- **2026-04-29 — One-fact-one-place rule.** Each fact lives in exactly one document; other documents link. Source-of-truth registry in `docs/README.md`.
+- **2026-04-29 — Glossary extracted from §10 to `docs/GLOSSARY.md`.** §10 of this document becomes a stub. Rationale: glossary is referenced from many other docs; centralization gives a stable URL and prevents drift. Same logic drove `docs/VERSIONING.md` (promoted from `protocol/SPEC.md` §5) and `docs/SPEC_STYLE.md` (the codified spec-authoring rules).
+- **2026-04-29 — Conformance is binary at a given protocol version.** `docs/CONFORMANCE.md`. Per-class implementation requirements (daemon / relay / adapter / SDK), runner contract with a JSON output schema, attestation format, trademark policy gated on a current attestation, dispute resolution. Public registry deferred to Phase 5.
+- **2026-04-29 — A2A mapping framework.** `docs/A2A_MAPPING.md` adopts a conforming / extending / deviating taxonomy. Verification of specific items against the live Google A2A spec is a Phase 1 follow-up; the document scaffolds the mapping with explicit `[verify]` markers for unverified claims. Drift-tracked as risk TR-004 in `docs/RISK_REGISTER.md`.
+- **2026-04-29 — Risk register established.** `docs/RISK_REGISTER.md` with categories TR/SR/MR/OR/LR/CR, severity scale, append-only history. Initial seed of 18 cross-phase risks. Reviewed at every phase exit.
+- **2026-04-29 — Phase 1 wire-format spec complete.** SPEC.md §6–§8 fully populated; eleven new CUE schemas; ~30 conformance fixtures; sandboxing corpus (Phase 1 deliverable from THREAT_MODEL §5.3). Per-phase open questions, decisions, and exit checklist tracked at `docs/phases/phase-1/`. Closes the Phase 1 spec deliverable from `project-context.md` §8 modulo the open questions logged in `phases/phase-1/open-questions.md`.
+- **2026-04-29 — Wire-format design choices.** Lifecycle: `agent.disconnect.reason` is a closed enum (additions are MAJOR until v0.2 introduces a gracefully-ignore-unknown guarantee); `agent.heartbeat` carries a per-agent `sequence` for drop detection. Awareness: a single `#AgentAwarenessRecord` is reused across announce, query, subscribe, diff. Diffs use sequence-based resumption (`since_sequence`) with full-snapshot fallback when out of window. Conflict: `conflict.check` returns `level_reached` + `partial` flag, supporting "best-effort within latency budget" semantics. Free-text fields (`intent`, `detail`, `message`, `reason`) are bounded (≤ 256 chars) and either control-character-free (`#Intent`) or printable-ASCII-only (`detail`, `message`). Hunk ranges enforce `end_line >= start_line`. File paths reject `..` traversal. Conflict declarations bounded at 1-3600 s TTL.
+- **2026-04-29 — Sandboxing corpus split: schema-layer vs. consumer-layer.** Negative fixtures (NUL, ANSI escape, RTL override, ASCII control, length bound) prove schema rejects smuggling vectors at parse time. Accepted-but-dangerous positive fixtures (literal "ignore prior instructions", fake-tool-result framing) lock in wire-level acceptance for legitimate text while the structured-envelope rule moves the defense to the consumer (adapter) layer. Adapter conformance tests in Phase 2 (Claude Code) and Phase 5 (others) verify the consumer-side defense.
+- **2026-04-29 — RFC 0015 (MCP tool surface) authored out of order in Phase 1.** Specifies the contract every Phase 2 adapter and the daemon's MCP server depend on. Twelve v1.0 tools across awareness / conflict / introspection / policy / audit; twelve Phase 4 names reserved. Architectural choices: MCP over local Unix socket / named pipe with UID-checked socket permissions; per-tool side-effect classification (`read_only` / `advisory` / `state_mutating`); `peer_content_fields` declaration on every output schema that may carry peer-controlled text (the editor-boundary operationalization of THREAT_MODEL §5); tool-surface versioning independent from wire-protocol versioning. Five alternatives considered and rejected or deferred.
+- **2026-04-29 — Pull-based notifications in v1.0; push deferred.** `tap_conflicts_pending` is a poll. MCP server-initiated messages are uneven across editors; defer to a MINOR tool-surface bump after Phase 2 confirms which editors support push. Recorded as Q-15-001.
+- **2026-04-29 — Token-aware adapter conventions (RFC 0015 amendment).** Initial v1.0 design would have leaked ~100k+ tokens of TAP-derived content per 30-turn session on a 20-developer team — eager start-of-turn awareness dumps, full structured payloads, inline consult bundles. Amended RFC 0015 with three guiding principles: pull-not-push (auto-inject only a ≤30-token session-start banner; deeper pulls only when banner reports pending items), synthesize-not-serialize (every state tool gains a `format` parameter with `summary` default returning daemon-synthesized prose 5–10× cheaper than structured JSON), scope-tightly (subscription scope narrowed at register time; `tap_peers_on_file` filters by relevance). Concrete changes: §3.10 (nine binding adapter conventions), `tap_conflict_check` returns `{ "ok": true }` on no-conflict, `tap_conflicts_pending` defaults to digest mode with `_expand` companion, `format` parameter on `tap_state_query`/`tap_peers_on_file`/`tap_peers_list`/`tap_recent_activity`, lazy-bundle convention reserved binding for Phase 4 consult/message tools (§6.1) so consult bundles travel by handle and are fetched per-file via `tap_consult_bundle_get`. Per-session fixed overhead drops from ~135k tokens to ~2k; variable cost scales with actual cross-developer activity. Phase 2 conformance test of ≤100 tokens/turn TAP-derived content steady state. Resolves Phase 1 open question Q-1-006.
 
 ### 9.6 Deferred items
 
@@ -540,17 +578,9 @@ Phase 1 scaffolding landed (2026-04-28). Next: validate the codegen pipeline end
 
 ## 10. Glossary
 
-- **Agent.** An LLM-driven coding assistant operating in an editor (Claude Code, Cursor, Codex, Aider). May be human-supervised or autonomous.
-- **Adapter.** Editor-specific thin client that bridges between an agent and the local daemon.
-- **Awareness state.** The relay's live map of who is working on what across a team, queryable by repo, branch, file, or developer.
-- **Consult.** A stateful, multi-turn, contextual conversation between two (or more) agents/developers about a specific topic, with lifecycle, transcript, and audit guarantees.
-- **Context bundle.** A scoped, content-addressed package of files, diffs, and references that travels with a consult so the recipient agent sees only what was deliberately shared.
-- **Daemon.** Long-running per-developer process that owns local git state, agent registration, and the WSS connection to the relay.
-- **Relay.** Hosted multi-tier service that provides identity, presence, awareness, routing, conflict detection, and consult coordination across developers.
-- **Scope.** A declared category of action a message or consult is permitted to perform: `read_only`, `advisory`, `suggest_edit`, `request_handoff`, `execute`. Higher scopes require greater trust or human approval.
-- **Trust pair.** A directed (developer → developer) relationship that controls auto-acceptance of inbound messages and consults at given scope levels.
-- **Worktree.** A git working directory linked to a shared `.git` object store, allowing parallel branch checkouts. Standard pattern for multi-agent development.
-- **TAP.** Team Agent Protocol — both the wire protocol (this spec) and the project (this repository).
+The canonical glossary is [`docs/GLOSSARY.md`](docs/GLOSSARY.md). Every domain term used in TAP documentation, source code, and the wire protocol is defined there. Add new terms there in the same change that introduces them.
+
+This section is retained as a stable section anchor; other documents that historically linked to `project-context.md#10-glossary` continue to land on this redirect.
 
 ---
 

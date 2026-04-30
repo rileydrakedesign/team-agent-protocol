@@ -1,0 +1,34 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.notify valid Level 1 notification",
+  "description": "Server-pushed notification carrying one Level 1 (file-only) conflict.",
+  "schema_ref": "conflict_notify#ConflictNotify",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "conflict.notify",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "feature/auth-refactor",
+      "detected_at": "2026-04-29T17:43:00Z",
+      "conflicts": [
+        {
+          "level": 1,
+          "file": "src/auth/oauth.rs",
+          "with": {
+            "developer_id": "samchen",
+            "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+            "branch": "feature/oauth-cleanup"
+          },
+          "confidence": 1.0,
+          "message": "sam started editing src/auth/oauth.rs"
+        }
+      ]
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

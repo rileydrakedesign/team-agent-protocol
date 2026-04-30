@@ -1,0 +1,22 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "agent.heartbeat rejects negative dirty_file_count",
+  "description": "dirty_file_count is constrained to non-negative integers.",
+  "schema_ref": "agent_heartbeat#AgentHeartbeat",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "agent.heartbeat",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "branch": "main",
+      "dirty_file_count": -1,
+      "sequence": 0
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Defends against integer-underflow exploits in counter accounting."
+}

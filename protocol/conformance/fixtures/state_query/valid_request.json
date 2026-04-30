@@ -1,0 +1,22 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.query valid request scoped to one branch",
+  "description": "A scope with one repo and one branch and no developer filter, plus a since timestamp for incremental fetch.",
+  "schema_ref": "state_query#StateQueryRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-101",
+    "method": "state.query",
+    "params": {
+      "scope": {
+        "repo": "https://github.com/tap-dev/tap.git",
+        "branches": ["main"]
+      },
+      "since": "2026-04-29T17:30:00Z"
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

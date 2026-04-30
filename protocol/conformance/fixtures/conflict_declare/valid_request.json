@@ -1,0 +1,32 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.declare valid request",
+  "description": "Proactive declaration of two files with a 10-minute TTL.",
+  "schema_ref": "conflict_declare#ConflictDeclareRequest",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-401",
+    "method": "conflict.declare",
+    "params": {
+      "developer_id": "rileydrake",
+      "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "repo": "https://github.com/tap-dev/tap.git",
+      "branch": "feature/auth-refactor",
+      "targets": [
+        {
+          "file": "src/auth/oauth.rs",
+          "hunks": [
+            { "start_line": 12, "end_line": 48, "op": "modify" }
+          ]
+        },
+        { "file": "src/auth/mod.rs" }
+      ],
+      "ttl_seconds": 600,
+      "reason": "extracting OAuth flow into its own module"
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

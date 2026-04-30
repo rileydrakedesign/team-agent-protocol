@@ -1,0 +1,25 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.announce valid clean worktree",
+  "description": "An agent on a branch with no dirty files. Empty dirty_files list is valid.",
+  "schema_ref": "state_announce#StateAnnounce",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.announce",
+    "params": {
+      "repo": "https://github.com/tap-dev/tap.git",
+      "sequence": 0,
+      "record": {
+        "developer_id": "rileydrake",
+        "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "branch": "main",
+        "worktree": "/Users/rileydrake/dev/tap",
+        "dirty_files": []
+      }
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

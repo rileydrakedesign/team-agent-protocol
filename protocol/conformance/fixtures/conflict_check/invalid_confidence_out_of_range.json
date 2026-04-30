@@ -1,0 +1,32 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "conflict.check rejects confidence > 1.0",
+  "description": "Confidence is bounded [0.0, 1.0]; values outside the range are a schema error.",
+  "schema_ref": "conflict_check#ConflictCheckResponse",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "id": "req-304",
+    "result": {
+      "level_reached": 3,
+      "partial": false,
+      "checked_at": "2026-04-29T17:42:00Z",
+      "conflicts": [
+        {
+          "level": 3,
+          "file": "src/auth/oauth.rs",
+          "with": {
+            "developer_id": "samchen",
+            "agent_id": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+            "branch": "feature/oauth-cleanup"
+          },
+          "confidence": 1.4
+        }
+      ]
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "A confidence over 1.0 indicates a buggy detector; the relay rejects rather than propagating nonsense to clients."
+}

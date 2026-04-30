@@ -1,0 +1,40 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.announce valid with dirty files",
+  "description": "An agent declares two dirty files, each with one or more hunks, plus an intent string.",
+  "schema_ref": "state_announce#StateAnnounce",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.announce",
+    "params": {
+      "repo": "https://github.com/tap-dev/tap.git",
+      "sequence": 17,
+      "record": {
+        "developer_id": "rileydrake",
+        "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "branch": "feature/auth-refactor",
+        "worktree": "/Users/rileydrake/dev/tap",
+        "intent": "extracting OAuth flow into its own module",
+        "dirty_files": [
+          {
+            "file": "src/auth/oauth.rs",
+            "hunks": [
+              { "start_line": 12, "end_line": 48, "op": "modify" },
+              { "start_line": 150, "end_line": 150, "op": "insert" }
+            ]
+          },
+          {
+            "file": "src/auth/mod.rs",
+            "hunks": [
+              { "start_line": 1, "end_line": 1, "op": "modify" }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "expected_valid": true,
+  "expected_round_trip": true
+}

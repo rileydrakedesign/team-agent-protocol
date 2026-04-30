@@ -1,0 +1,21 @@
+{
+  "$schema": "https://tap.dev/conformance/v1.json",
+  "name": "state.diff rejects empty changes list",
+  "description": "changes MUST contain at least one entry; empty diffs are wasteful and a likely client bug.",
+  "schema_ref": "state_diff#StateDiff",
+  "data": {
+    "jsonrpc": "2.0",
+    "tap_version": "0.1.0",
+    "trace_id": "0af7651916cd43dd8448eb211c80319c",
+    "method": "state.diff",
+    "params": {
+      "subscription_id": "tap_sub_AaBbCcDdEeFfGgHhIiJjKk1234",
+      "sequence": 4132,
+      "emitted_at": "2026-04-29T17:38:00Z",
+      "changes": []
+    }
+  },
+  "expected_valid": false,
+  "expected_error_code": -32602,
+  "notes": "Implementations that batch changes MUST suppress the diff entirely when no changes apply, rather than emitting an empty list."
+}
