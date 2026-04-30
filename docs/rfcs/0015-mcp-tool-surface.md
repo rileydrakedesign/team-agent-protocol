@@ -428,23 +428,41 @@ Not applicable — no peer content.
 
 - **Class:** read-only.
 - **Wire mapping:** none (locally maintained from `conflict.notify` notifications received since last call).
-- **Description.** Returns the queue of conflict notifications the daemon has received for the agent and not yet shown. Lets the agent fetch outstanding notifications between hook invocations without subscribing to every server push.
+- **Description.** Returns the queue of conflict notifications the daemon has received for the agent and not yet shown. Lets the agent fetch outstanding notifications between hook invocations without subscribing to every server push. Digest mode by default per §3.10.5.
 
 #### Input
 
-(none)
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `format` | string | no | `"digest"` (default) or `"full"`. |
 
 #### Output
+
+When `format == "digest"` (default):
+
+| Field | Type | Notes |
+|---|---|---|
+| `count` | int | Total pending notifications. |
+| `summary` | string | Daemon-synthesized one-line-per-item digest, ≤ 30 tokens per item. Each line carries a `notification_id`. |
+
+Example:
+```
+3 pending: 1) src/auth/oauth.rs overlap with samchen (notif_a1b2). 2) Casey released claim on docs/ (notif_c3d4). 3) Migration conflict on db/0042 (notif_e5f6).
+```
+
+When `format == "full"`:
 
 | Field | Type | Notes |
 |---|---|---|
 | `notifications` | object[] | One entry per pending `conflict.notify`. Each carries the wire-method `params` plus a daemon-issued `notification_id` and `received_at`. |
 
-The agent MAY pass a `notification_id` to a future `tap_conflicts_ack` (Phase 2 follow-up) to acknowledge; in v0.1, the daemon clears pending notifications after they have been read once.
+Companion tool **`tap_conflicts_pending_expand`** (read-only): takes a `notification_id` from a digest line and returns the full structured `#ConflictReport`. Cost is paid only for items the agent decides to act on.
+
+The agent MAY pass a `notification_id` to a future `tap_conflicts_ack` (Phase 2 follow-up) to acknowledge; in v0.1, the daemon clears pending notifications after they have been read once (digest read counts as read; expand does not re-clear).
 
 #### Sandboxing
 
-`peer_content_fields = ["notifications[].conflicts[].message"]`.
+`peer_content_fields = ["summary", "notifications[].conflicts[].message"]`.
 
 ---
 
@@ -491,9 +509,14 @@ Not applicable.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
+| `format` | string | no | `"summary"` (default) or `"structured"`. |
 | `online_only` | bool | no | Default `false`. When `true`, returns only peers with at least one connected agent. |
 
 #### Output
+
+When `format == "summary"`: `summary: string` plus `peer_count: int`. Bounded ≤ 200 tokens.
+
+When `format == "structured"`:
 
 | Field | Type | Notes |
 |---|---|---|
@@ -534,16 +557,21 @@ Not applicable. Policy data is operator-controlled, never peer-controlled.
 
 - **Class:** read-only.
 - **Wire mapping:** none (daemon-side rolling buffer of awareness events).
-- **Description.** Returns the most recent awareness events the daemon has observed: peers attaching/detaching, branch switches, conflict notifications. Bounded to the last ≤ 100 events or the last 5 minutes, whichever is shorter. Intended for debugging and for UI surfaces (e.g., the dashboard's activity panel rendered through the adapter); not for production decision-making by the agent.
+- **Description.** Returns the most recent awareness events the daemon has observed: peers attaching/detaching, branch switches, conflict notifications. Bounded to the last ≤ 100 events or the last 5 minutes, whichever is shorter. Intended for debugging and for UI surfaces (e.g., the dashboard's activity panel rendered through the adapter); not for production decision-making by the agent. Adapters MUST NOT auto-call this tool per §3.10.1.
 
 #### Input
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
+| `format` | string | no | `"summary"` (default) or `"structured"`. |
 | `limit` | int | no | 1–100. Default 20. |
 | `since` | timestamp | no | RFC 3339. Returns only events at or after. |
 
 #### Output
+
+When `format == "summary"`: `summary: string` plus `event_count: int`. Bounded ≤ 400 tokens.
+
+When `format == "structured"`:
 
 | Field | Type | Notes |
 |---|---|---|
@@ -552,7 +580,7 @@ Not applicable. Policy data is operator-controlled, never peer-controlled.
 
 #### Sandboxing
 
-`peer_content_fields = ["events[].summary"]`. The daemon constructs `summary` strings from peer-controlled fields (intent, conflict message); they MUST flow to a UI element only.
+`peer_content_fields = ["summary", "events[].summary"]`. The daemon constructs `summary` strings from peer-controlled fields (intent, conflict message); they MUST flow to a UI element only.
 
 ---
 
