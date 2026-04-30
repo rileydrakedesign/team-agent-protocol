@@ -24,6 +24,15 @@ bazel_dep(name = "gazelle", version = "0.39.1")
 bazel_dep(name = "aspect_rules_js", version = "2.1.2")
 bazel_dep(name = "aspect_rules_ts", version = "3.4.0")
 
+# TypeScript compiler repo (@npm_typescript) used by aspect_rules_ts toolchains.
+rules_ts_ext = use_extension(
+    "@aspect_rules_ts//ts:extensions.bzl",
+    "ext",
+    dev_dependency = True,
+)
+rules_ts_ext.deps()
+use_repo(rules_ts_ext, "npm_typescript")
+
 # Rust toolchain — MSRV pinned. Bump deliberately, with rationale recorded in
 # project-context.md §9.5.
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")

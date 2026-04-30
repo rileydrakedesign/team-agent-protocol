@@ -52,6 +52,9 @@ jobs:
           disk-cache: ${{ github.workflow }}-codegen
           repository-cache: true
 
+      - name: Set up CUE
+        uses: cue-lang/setup-cue@v1.0.1
+
       - name: Regenerate bindings
         run: bazel run --config=ci //tools/codegen:generate
 
