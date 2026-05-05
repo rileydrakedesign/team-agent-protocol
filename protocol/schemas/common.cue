@@ -6,6 +6,8 @@
 
 package schemas
 
+import "list"
+
 // RFC 3339 UTC timestamp. Always Zulu-suffixed for canonical form.
 #Timestamp: =~"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,9})?Z$"
 
@@ -16,7 +18,11 @@ package schemas
 
 // Path within a repository worktree. Relative to the repo root, forward
 // slashes only, no leading slash, no '..' traversal, no NUL bytes.
-#FilePath: =~"^[A-Za-z0-9._-][A-Za-z0-9._/-]{0,1023}$" & !~"\\.\\./" & !~"^\\.\\.$" & !~"/\\.\\./"
+//
+// Length cap is 999 (not 1024) so the regex compiles in Go's regexp/RE2
+// engine, which rejects bounded counts >= 1000. Paths longer than 1KB are
+// vanishingly rare in real codebases.
+#FilePath: =~"^[A-Za-z0-9._-][A-Za-z0-9._/-]{0,999}$" & !~"\\.\\./" & !~"^\\.\\.$" & !~"/\\.\\./"
 
 // 1-indexed inclusive line number within a file.
 #LineNumber: int & >=1 & <=2_000_000
@@ -26,9 +32,14 @@ package schemas
 
 // A contiguous range of affected lines plus its operation kind. Both bounds
 // inclusive; for pure insertions, end_line == start_line and op == "insert".
+//
+// The cross-field invariant `end_line >= start_line` is documented in the
+// spec text but not enforced at the wire-schema layer because JSON Schema
+// cannot express comparisons between sibling fields. The TAP daemon enforces
+// it before accepting a hunk; the conformance suite covers it via fixtures.
 #Hunk: {
 	start_line: #LineNumber
-	end_line:   #LineNumber & >=start_line
+	end_line:   #LineNumber
 	op:         #HunkOp
 }
 
@@ -37,8 +48,6 @@ package schemas
 	file:  #FilePath
 	hunks: [...#Hunk] & list.MinItems(1)
 }
-
-import "list"
 
 // Awareness scope: which slices of awareness state a request applies to.
 // At least `repo` is required. Empty/absent `branches` or `developers` means

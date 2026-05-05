@@ -7,6 +7,7 @@
 
 package schemas
 
+import "list"
 #ConflictDeclareParams: {
 	developer_id: #DeveloperId
 	agent_id:     #AgentId
@@ -23,8 +24,6 @@ package schemas
 	// Optional ASCII-bounded reason. Advisory.
 	reason?: =~"^[\\x20-\\x7e]{0,128}$"
 }
-
-import "list"
 
 #ConflictDeclareRequest: #Request & {
 	method: "conflict.declare"

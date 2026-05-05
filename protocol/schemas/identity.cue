@@ -30,8 +30,9 @@ package schemas
 // daemon rejects branch names with control characters or path traversal.
 #BranchName: =~"^[A-Za-z0-9_./-]{1,255}$" & !~"^\\." & !~"\\.\\."
 
-// Filesystem path to a worktree, absolute, no trailing slash.
-#WorktreePath: =~"^/[^\\0]+[^/]$"
+// Filesystem path to a worktree, absolute, no trailing slash. Uses `\x00`
+// (not `\0`) so the regex compiles cleanly in Rust's regex crate.
+#WorktreePath: =~"^/[^\\x00]+[^/]$"
 
 // Capability strings declared at registration. Capabilities are advisory;
 // the relay does not interpret them but routes them through to peers.

@@ -6,6 +6,7 @@
 
 package schemas
 
+import "list"
 #ConflictNotifyParams: {
 	// The agent the notification targets.
 	developer_id: #DeveloperId
@@ -22,8 +23,6 @@ package schemas
 	// conflict.check for ergonomic consistency.
 	conflicts: [...#ConflictReport] & list.MinItems(1)
 }
-
-import "list"
 
 #ConflictNotify: #Notification & {
 	method: "conflict.notify"

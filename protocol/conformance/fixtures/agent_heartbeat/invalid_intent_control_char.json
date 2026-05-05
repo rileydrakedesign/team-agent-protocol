@@ -1,7 +1,7 @@
 {
   "$schema": "https://tap.dev/conformance/v1.json",
   "name": "agent.heartbeat rejects intent with control characters",
-  "description": "intent forbids ASCII control characters (0x00-0x1f, 0x7f) to prevent control-token smuggling per docs/THREAT_MODEL.md §5.",
+  "description": "intent forbids ASCII control characters (0x00-0x1f, 0x7f) to prevent control-token smuggling per docs/THREAT_MODEL.md section 5.",
   "schema_ref": "agent_heartbeat#AgentHeartbeat",
   "data": {
     "jsonrpc": "2.0",
@@ -13,11 +13,11 @@
       "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       "branch": "main",
       "dirty_file_count": 0,
-      "intent": "refactorauth",
+      "intent": "refactor\u0007auth",
       "sequence": 1
     }
   },
   "expected_valid": false,
   "expected_error_code": -32602,
-  "notes": "Sandboxing constraint: free-text fields strip control characters at the schema layer so smuggled tokens never reach a downstream consumer."
+  "notes": "Sandboxing constraint: free-text fields strip control characters at the schema layer so smuggled tokens never reach a downstream consumer. The BEL byte (U+0007) is JSON-escaped so the fixture file is RFC 8259-conformant; the decoded string still contains the control byte which the #Intent regex rejects."
 }

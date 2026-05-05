@@ -25,4 +25,9 @@ rust_test(
     name = "tap-protocol_test",
     crate = ":tap-protocol",
     edition = "2021",
+    data = [
+        "//protocol/conformance:fixtures",
+        "//protocol/conformance:version",
+        "//protocol/schemas:generated_schemas",
+    ],
 )

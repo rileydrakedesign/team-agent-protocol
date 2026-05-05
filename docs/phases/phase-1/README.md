@@ -2,12 +2,12 @@
 status: draft
 phase: 1
 owners: [@rileydrakedesign]
-last-reviewed: 2026-04-29
+last-reviewed: 2026-05-04
 ---
 
 # Phase 1 — Protocol & Foundations
 
-This document is the entry point for everything about Phase 1. The phase landed scaffolding on 2026-04-28 and the documentation foundation on 2026-04-29; Phase 1 itself is **in progress**, gated on completion of the wire-format spec and the conformance corpus required by the ship criterion.
+This document is the entry point for everything about Phase 1. The phase landed scaffolding on 2026-04-28 and the documentation foundation on 2026-04-29. Codegen pipeline went green end-to-end on 2026-05-04 — all three reference runners (Rust, Go, TypeScript) pass 46/46 fixtures, and the codegen step is idempotent. Phase 1 itself is **in progress**; remaining gates: doc lints in CI, resolution of the remaining open questions ([`open-questions.md`](open-questions.md)), and external-implementer ship-criterion validation ([`exit.md`](exit.md) §1).
 
 ---
 
@@ -97,9 +97,9 @@ Phase 1 introduces the three reference SDK packages but no operational component
 
 | Component | Path | Status |
 |---|---|---|
-| `tap-protocol` (Rust) | [`../../../crates/tap-protocol/`](../../../crates/tap-protocol/) | scaffolding |
-| `tap-protocol` (Go) | [`../../../pkg/protocol/`](../../../pkg/protocol/) | scaffolding |
-| `tap-protocol` (TypeScript) | [`../../../packages/tap-protocol/`](../../../packages/tap-protocol/) | scaffolding |
+| `tap-protocol` (Rust) | [`../../../crates/tap-protocol/`](../../../crates/tap-protocol/) | hand-written helpers + conformance runner green (46/46); generated types stubbed pending cargo-typify fix |
+| `tap-protocol` (Go) | [`../../../pkg/protocol/`](../../../pkg/protocol/) | hand-written helpers + generated `types.go` (518 lines) + conformance runner green (46/46) |
+| `tap-protocol` (TypeScript) | [`../../../packages/tap-protocol/`](../../../packages/tap-protocol/) | hand-written helpers + generated `all.ts` + conformance runner green (46/46) |
 
 Each ships generated bindings + hand-written envelope helpers + a conformance test runner. SDK component docs (`docs/components/sdk/...`) are deferred until Phase 2 produces a stable API surface.
 
@@ -107,7 +107,7 @@ Each ships generated bindings + hand-written envelope helpers + a conformance te
 
 The phase has two parallel tracks:
 
-- **Spec track.** Finish the wire-format prose, schemas, and fixtures. Run codegen end-to-end. Pass all three reference runners.
+- **Spec track.** Wire-format prose, schemas, fixtures, codegen pipeline, and per-language conformance runners — all green as of 2026-05-04. Two follow-ups remain deferred (cargo-typify panic on certain `allOf+not` patterns, rules_rust crate-universe wiring) — both ergonomics, neither blocks conformance.
 - **Foundation track.** Land the documentation system every later phase will follow. Substantially complete as of 2026-04-29.
 
 Phase 2 work is unblocked once the spec track ships its lifecycle / awareness / conflict surface; Phase 2 RFCs are authored in parallel out of order (see §6). The full authorship order is in [`../../DOCUMENTATION_PLAN.md`](../../DOCUMENTATION_PLAN.md) §9.

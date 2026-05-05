@@ -475,9 +475,15 @@ Each phase is a coherent milestone with explicit ship criteria. No time estimate
 
 ### 9.2 Current task
 
-Phase 1 wire-format spec complete (2026-04-29): SPEC.md §6–§8 fully populated, eleven new CUE schemas, ~30 conformance fixtures including the sandboxing corpus, Phase 1 doc bundle stood up, RFC 0015 (MCP tool surface) drafted out of order. Foundation documentation system landed earlier the same day. Phase 1 scaffolding landed (2026-04-28). Next: install codegen toolchain locally and produce real bindings, wire doc lints in CI, validate the Phase 1 ship criterion with an external implementer.
+Codegen pipeline ships green (2026-05-04): all three reference runners pass 46/46 fixtures (Rust, Go, TypeScript). Pipeline is idempotent. Schema-fidelity issues found and fixed during the first end-to-end run (CUE `{...}` → `{const: {}}` export bug, `\0` vs `\x00` in regex, `{0,1023}` exceeding Go RE2's count limit, jsonschema 0.17 falling back to draft-7 without feature flag, etc. — all documented in `docs/phases/phase-1/decisions.md`). Two follow-ups remain deferred: cargo-typify 0.6.2 panic on certain `allOf+not` patterns (Rust generated types stubbed; runner doesn't need them), and rules_rust crate-universe wiring (Rust tests run via cargo, not Bazel). Next: doc lints in CI, validate the Phase 1 ship criterion with an external implementer.
 
 ### 9.3 Immediate next steps
+
+**Done in this session (2026-04-29) — codegen pipeline pre-flight:**
+
+- ✅ Pre-staged everything needed to take codegen from "schemas exist" to "runners validate fixtures against `schema_ref` per `docs/CONFORMANCE.md` §4 in all three languages." Per `docs/phases/phase-1/decisions.md`'s 2026-04-29 codegen-pre-flight entry: extended `tools/codegen/generate.sh`'s SCHEMAS array from 3 → 14, rewrote all three conformance runners with full-spec behavior (validators + JSON output + exit codes), wired Bazel `data` deps to `//protocol/conformance:fixtures`/`:version` and the new `//protocol/schemas:generated_schemas` filegroup, added `TEST_SRCDIR` runfile fallbacks to runners, added `conformance_test.go` to `pkg/protocol`'s `go_test` srcs (was missing), wired gazelle `go_deps` extension in `MODULE.bazel` for `santhosh-tekuri/jsonschema/v6`. CI: `codegen-drift` job now installs `typify-cli` (cached) and `json-schema-to-typescript`; `conformance` job moved off the vacuously-green filegroup target onto explicit per-language runners; new `typescript` job runs `pnpm test` because the TS Bazel `js_test` target is deferred.
+- ✅ `protocol/conformance/VERSION` created (`0.1.0`); closes Q-1-002.
+- ✅ Five sandboxing fixtures with literal control bytes (NUL / BEL / ESC / DEL / RTL override) re-encoded with `\uXXXX` JSON escapes — fixture files are now RFC 8259-conformant; decoded strings still carry the actual control codepoints so the schema regex still rejects them. Without this fix the runners would have failed to parse the fixture JSON itself rather than rejecting the `data`.
 
 **Done in this session (2026-04-29) — wire-format + RFC 0015:**
 
@@ -517,9 +523,9 @@ Phase 1 wire-format spec complete (2026-04-29): SPEC.md §6–§8 fully populate
 
 **Next (per the authorship order in `docs/DOCUMENTATION_PLAN.md` §9):**
 
-1. **Install the codegen toolchain locally** (`cue`, `typify`, `json-schema-to-typescript`) and run `bazel run //tools/codegen:generate` to produce the first real bindings. Commit them. Verify `bazel test //...` is green across all three languages. Update the per-language conformance runners (`crates/tap-protocol/tests/conformance.rs`, `pkg/protocol/conformance_test.go`, `packages/tap-protocol/src/test/conformance.test.ts`) to execute the ~30 new fixtures added in this batch.
+1. **Install host toolchain and run codegen end-to-end.** All scaffolding for this is in place (see "codegen pipeline pre-flight" above). The user-side handoff: `brew install cue` (≥ 0.10), `cargo install typify-cli`, `pnpm install -g json-schema-to-typescript`. Then `cd pkg/protocol && go mod tidy` (populates `go.sum` for the new `santhosh-tekuri/jsonschema/v6` dep), `pnpm install` at the repo root, `bazel run //tools/codegen:generate`, commit the diff, and `bazel test //...` plus `pnpm --filter @tap/protocol test`. Iterate on whatever the first run surfaces — most likely the per-file `cue export --out=jsonschema` invocation against `package schemas` for cross-file `$ref` resolution. If `cue export` doesn't pull package siblings, switch the script to a package-level export with per-definition extraction. Q-1-001 (canonicalization rule) is still TBD; runners use stable serializer + sorted keys until decided.
 2. **Doc lints in CI.** Wire `markdownlint`, `vale`, and the custom `tools/doclint/` checks specified in `docs/DOCUMENTATION_PLAN.md` §10.1. Initially advisory on legacy doc paths per §11.
-3. **Resolve the Phase 1 open questions** in `docs/phases/phase-1/open-questions.md`: pick a round-trip canonicalization rule (Q-1-001), land `protocol/conformance/VERSION` (Q-1-002), confirm the `tap.dev` provisioning question (Q-1-004), and verify the `[verify]` items in `docs/A2A_MAPPING.md` against the live A2A spec (Q-1-005).
+3. **Resolve the remaining Phase 1 open questions** in `docs/phases/phase-1/open-questions.md`: round-trip canonicalization rule (Q-1-001), `tap.dev` provisioning (Q-1-004), and verify the `[verify]` items in `docs/A2A_MAPPING.md` against the live A2A spec (Q-1-005). Q-1-002 closed in this session.
 4. **Author the next critical-path Phase 2 RFC: `rfcs/0030-claude-code-adapter.md`.** Consumes RFC 0015 and the daemon RFCs that come next. Defines hook contracts (`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`), MCP server registration with Claude Code, and the adapter-side conformance tests for the §3.7 sandboxing contract.
 5. **Branch protection on `main`.** Configure once permissions allow: required signed commits, two-reviewer approval for `protocol/` and `tools/codegen/`, required CI checks, no force-push.
 6. **Validate Phase 1 ship criterion:** hand the spec + schemas + conformance suite + foundation docs to an external engineer and confirm they can produce a passing client without reading TAP source. Operationalized in `docs/phases/phase-1/exit.md` §1.
@@ -565,6 +571,8 @@ Phase 1 wire-format spec complete (2026-04-29): SPEC.md §6–§8 fully populate
 
 > Things noticed during work that are out of scope for the current phase but should not be forgotten.
 
+- **TS Bazel `js_test` target.** `packages/tap-protocol/BUILD.bazel` has a TODO comment. Wiring requires `npm_translate_lock` from `aspect_rules_js` plus `npm_link_all_packages` so the test rule can resolve `ajv` from runfiles. Until then TS conformance runs only via the dedicated CI `typescript` job (`pnpm --filter @tap/protocol test`).
+- **Go re-export wrapper for generated types.** The `pkg/protocol/generated/` package will be importable directly once codegen runs. A `pkg/protocol/types.go` wrapper that re-exports under a single import path is a small follow-up; can't be authored until concrete generated type names exist.
 - **Hermetic codegen toolchains.** Move `cue`, `typify`, `json2ts` from ambient host deps to Bazel-managed toolchains. Phase 2.
 - **Bazel remote cache.** Add BuildBuddy free tier when CI build time exceeds ~5 min.
 - **rules_rust crate-universe.** Wire Cargo dep resolution into Bazel proper instead of relying on Cargo at the Bazel boundary. Phase 2 once `tap-daemon` lands and depends on tokio, rustls, etc.

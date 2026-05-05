@@ -40,7 +40,7 @@ jobs:
   codegen-drift:
     name: Codegen drift check
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -54,6 +54,34 @@ jobs:
 
       - name: Set up CUE
         uses: cue-lang/setup-cue@v1.0.1
+
+      - name: Set up Rust (for cargo-typify install)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo-typify binary
+        uses: actions/cache@v4
+        id: typify-cache
+        with:
+          path: ~/.cargo/bin/cargo-typify
+          key: cargo-typify-${{ runner.os }}-v0.6
+
+      - name: Install cargo-typify
+        if: steps.typify-cache.outputs.cache-hit != 'true'
+        run: cargo install cargo-typify --locked
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.18"
+          cache: pnpm
+
+      - name: Install json-schema-to-typescript
+        run: pnpm install -g json-schema-to-typescript
 
       - name: Regenerate bindings
         run: bazel run --config=ci //tools/codegen:generate
@@ -97,5 +125,39 @@ jobs:
           disk-cache: ${{ github.workflow }}-conformance
           repository-cache: true
 
-      - name: Run conformance suite across all bindings
-        run: bazel test --config=ci //protocol/conformance/...
+      - name: Run conformance suite (Rust + Go)
+        run: |
+          bazel test --config=ci \
+            //crates/tap-protocol:tap-protocol_test \
+            //pkg/protocol:protocol_test
+
+  typescript:
+    name: TypeScript build & conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.18"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build TypeScript packages
+        run: pnpm -r build
+
+      # Note: this exercises the conformance suite via node --test against the
+      # compiled dist/. A Bazel `js_test` target is deferred until npm/Bazel
+      # integration lands; see packages/tap-protocol/BUILD.bazel.
+      - name: Run TypeScript conformance suite
+        run: pnpm --filter @tap/protocol test

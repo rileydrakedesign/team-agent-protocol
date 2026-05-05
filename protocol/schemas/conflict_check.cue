@@ -6,6 +6,7 @@
 
 package schemas
 
+import "list"
 // Single intended-write target. file is required; hunks is optional. When
 // hunks is absent, the daemon is asking "is anyone else touching this file at
 // all" (Level 1). When hunks is present, the daemon is asking for hunk-level
@@ -57,8 +58,6 @@ package schemas
 
 	intended_writes: [...#IntendedWrite] & list.MinItems(1)
 }
-
-import "list"
 
 #ConflictCheckRequest: #Request & {
 	method: "conflict.check"

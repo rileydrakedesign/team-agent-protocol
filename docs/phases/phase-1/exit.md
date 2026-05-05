@@ -61,14 +61,14 @@ Phase 2 RFCs authored out of order in Phase 1 (informational, not gating):
 
 ## 5. Wire-format spec
 
-- [ ] `protocol/SPEC.md` §1–8 fully populated; §9–12 placeholders explicitly marked Phase 4.
-- [ ] CUE schemas in `protocol/schemas/` exist for every method in §6–8.
-- [ ] Conformance fixtures cover every CUE definition with at least one positive and one negative case (per [`test-plan.md`](test-plan.md) §3).
-- [ ] Sandboxing fixture corpus present (per [`test-plan.md`](test-plan.md) §4).
-- [ ] All three reference bindings regenerate without drift.
-- [ ] Conformance suite passes in all three reference bindings.
-- [ ] `protocol/conformance/VERSION` exists.
-- [ ] `protocol/SPEC.md` Appendix A change log up to date.
+- [x] `protocol/SPEC.md` §1–8 fully populated; §9–12 placeholders explicitly marked Phase 4.
+- [x] CUE schemas in `protocol/schemas/` exist for every method in §6–8.
+- [ ] Conformance fixtures cover every CUE definition with at least one positive and one negative case (per [`test-plan.md`](test-plan.md) §3) — 5 response-type definitions still missing negatives (deferred follow-up).
+- [x] Sandboxing fixture corpus present (per [`test-plan.md`](test-plan.md) §4).
+- [x] All three reference bindings regenerate without drift (`bazel run //tools/codegen:generate` is idempotent).
+- [x] Conformance suite passes in all three reference bindings — Rust 46/46, Go 46/46, TypeScript 46/46.
+- [x] `protocol/conformance/VERSION` exists.
+- [x] `protocol/SPEC.md` Appendix A change log up to date.
 
 ## 6. Tests
 

@@ -5,6 +5,7 @@
 
 package schemas
 
+import "list"
 // Kind of a single state-diff change.
 //
 // - agent_attached: a new agent appeared in the subscription's scope.
@@ -44,8 +45,6 @@ package schemas
 	// recipients MUST treat the list as a set.
 	changes: [...#StateDiffChange] & list.MinItems(1)
 }
-
-import "list"
 
 #StateDiff: #Notification & {
 	method: "state.diff"

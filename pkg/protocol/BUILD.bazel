@@ -17,6 +17,17 @@ go_library(
 
 go_test(
     name = "protocol_test",
-    srcs = ["protocol_test.go"],
+    srcs = [
+        "conformance_test.go",
+        "protocol_test.go",
+    ],
+    data = [
+        "//protocol/conformance:fixtures",
+        "//protocol/conformance:version",
+        "//protocol/schemas:generated_schemas",
+    ],
     embed = [":protocol"],
+    deps = [
+        "@com_github_santhosh_tekuri_jsonschema_v6//:jsonschema",
+    ],
 )

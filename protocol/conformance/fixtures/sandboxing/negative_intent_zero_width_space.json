@@ -13,11 +13,11 @@
       "agent_id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       "branch": "main",
       "dirty_file_count": 0,
-      "intent": "harmlesspayload",
+      "intent": "harmless\u007fpayload",
       "sequence": 1
     }
   },
   "expected_valid": false,
   "expected_error_code": -32602,
-  "notes": "Pattern: ASCII control-character smuggling. THREAT_MODEL §5.3 'smuggled control tokens'. Note: zero-width Unicode characters are a Phase 4 follow-up; the v0.1 intent regex permits them so they can flow through to UI defenses."
+  "notes": "Pattern: ASCII control-character smuggling. THREAT_MODEL section 5.3 'smuggled control tokens'. The DEL byte is JSON-escaped so the fixture file is RFC 8259-conformant; the decoded string still contains U+007F which the #Intent regex rejects. Note: zero-width Unicode characters are a Phase 4 follow-up; the v0.1 intent regex permits them so they can flow through to UI defenses."
 }

@@ -35,14 +35,15 @@ Lean toward JCS for its formal grounding, accepting the small import-cost in eac
 
 ### Q-1-002 — Conformance suite version file
 
-**Status:** open
+**Status:** resolved
 **Raised:** 2026-04-29 by @rileydrakedesign
+**Resolved:** 2026-04-29 (see [`decisions.md`](decisions.md))
 
 **Question.** [`../../VERSIONING.md`](../../VERSIONING.md) §5 specifies that `protocol/conformance/VERSION` carries the suite version. The file does not yet exist. When does it land, and what is its content format?
 
 **Why it matters.** Conformance attestations cite the suite version per [`../../CONFORMANCE.md`](../../CONFORMANCE.md) §5; without the file, attestations have nothing concrete to cite.
 
-**Resolution.** TBD — land before Phase 1 exit. Plain text, single line: `0.1.0` (or current version).
+**Resolution.** Landed as part of the codegen-pipeline pre-flight batch on 2026-04-29. Format is plain text, single line, trailing newline. Initial content: `0.1.0`. Conformance runners read it from `protocol/conformance/VERSION` and surface it as `suite_version` in the [`../../CONFORMANCE.md`](../../CONFORMANCE.md) §4.1 JSON output.
 
 ### Q-1-003 — Hermetic codegen toolchain
 
@@ -111,7 +112,13 @@ After amendments, fixed overhead drops to ~2,000 tokens per session; variable co
 
 ## Resolved
 
-(none yet)
+### Q-1-002 — Conformance suite version file (resolved 2026-04-29)
+
+(see Open above for full text — kept here only as a navigation anchor)
+
+### Q-1-006 — Token budget for TAP-derived agent context (resolved 2026-04-29)
+
+(see Open above for full text — kept here only as a navigation anchor)
 
 ## Deferred
 

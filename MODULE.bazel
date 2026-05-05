@@ -46,3 +46,13 @@ register_toolchains("@rust_toolchains//:all")
 # Go toolchain.
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(version = "1.23.4")
+
+# Go module dependencies, sourced from per-package go.mod files via gazelle.
+# Requires `go.sum` next to each go.mod listed below; run `go mod tidy` in
+# the package after editing go.mod to keep go.sum current.
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//pkg/protocol:go.mod")
+use_repo(
+    go_deps,
+    "com_github_santhosh_tekuri_jsonschema_v6",
+)

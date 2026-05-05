@@ -24,12 +24,12 @@
             "branch": "feature/oauth-cleanup"
           },
           "confidence": 1.0,
-          "message": "innocent‮message"
+          "message": "innocent\u202emessage"
         }
       ]
     }
   },
   "expected_valid": false,
   "expected_error_code": -32602,
-  "notes": "Pattern: bidirectional-rendering smuggling. Defended at the schema layer because conflict.notify.message is constrained to printable ASCII."
+  "notes": "Pattern: bidirectional-rendering smuggling. Defended at the schema layer because conflict.notify.message is constrained to printable ASCII. The RTL override codepoint is JSON-escaped (legal in JSON either way) so the fixture file reads cleanly in editors."
 }

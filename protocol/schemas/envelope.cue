@@ -26,23 +26,28 @@ package schemas
 }
 
 // Request: client→server method invocation expecting a response.
+//
+// `params` is `[string]: _` (open object) rather than `{...}` because CUE's
+// JSON Schema export of `{...}` produces `{"const": {}}`, which is the
+// empty-object literal — not the intended "any object". Derived request
+// schemas (e.g., #AgentRegisterRequest) tighten params to a specific shape.
 #Request: #Envelope & {
 	id:     #JSONRPCId & !=null
 	method: string & !=""
-	params?: {...}
+	params?: [string]: _
 }
 
 // Notification: client→server method invocation that does not expect a
 // response. Distinguished from #Request by the absence of `id`.
 #Notification: #Envelope & {
 	method: string & !=""
-	params?: {...}
+	params?: [string]: _
 }
 
 // Response: server→client successful response to a request.
 #Response: #Envelope & {
 	id:     #JSONRPCId
-	result: {...}
+	result: [string]: _
 }
 
 // ErrorResponse: server→client failure response to a request.

@@ -17,11 +17,11 @@
         "branch": "main",
         "worktree": "/Users/rileydrake/dev/tap",
         "dirty_files": [],
-        "intent": "harmless[2J[Hpwn"
+        "intent": "harmless\u001b[2J\u001b[Hpwn"
       }
     }
   },
   "expected_valid": false,
   "expected_error_code": -32602,
-  "notes": "Pattern: terminal-control smuggling. THREAT_MODEL §5.3 'smuggled control tokens'."
+  "notes": "Pattern: terminal-control smuggling. THREAT_MODEL section 5.3 'smuggled control tokens'. ESC bytes are JSON-escaped so the fixture file is RFC 8259-conformant; the decoded string still contains U+001B which the #Intent regex rejects."
 }

@@ -1,6 +1,8 @@
 # TAP Conformance Suite
 
-A conformant TAP implementation MUST pass every fixture in this directory. The suite is part of the protocol specification (see [`../SPEC.md`](../SPEC.md) §14) and is consumed by per-language test runners under `crates/tap-protocol/tests/`, `pkg/protocol/conformance_test.go`, and `packages/tap-protocol/tests/`.
+A conformant TAP implementation MUST pass every fixture in this directory. The suite is part of the protocol specification (see [`../SPEC.md`](../SPEC.md) §14) and is consumed by per-language test runners under `crates/tap-protocol/tests/conformance.rs`, `pkg/protocol/conformance_test.go`, and `packages/tap-protocol/src/test/conformance.test.ts`.
+
+Suite version is pinned in [`VERSION`](VERSION). All three reference runners pass 46/46 as of 2026-05-04.
 
 ## Layout
 
@@ -69,22 +71,42 @@ Each fixture is a JSON object with the following shape:
 
 ## Per-language test runner contract
 
-Each implementation language exposes a binary or test entry point that:
+Each implementation language exposes a test entry point that:
 
-1. Loads every `*.json` file under `fixtures/`.
-2. For each fixture, parses `data` as the type identified by `schema_ref`.
-3. Asserts:
-   - Parse success matches `expected_valid`.
-   - For valid fixtures: serializing back produces the original bytes when `expected_round_trip` is `true`.
-   - For invalid fixtures with `expected_error_code` set: the parse error maps to the documented code.
-4. Exits non-zero if any assertion fails. Output should identify the failing fixture by `name`.
+1. Loads every `*.json` file under `fixtures/` (recursive).
+2. Loads the combined JSON Schema document at `protocol/schemas/_generated/all.json` (produced by [`../../tools/codegen/generate.sh`](../../tools/codegen/generate.sh)).
+3. For each fixture, looks up `$defs[<DefinitionName>]` from `schema_ref`'s `<file>#<DefinitionName>` form. The `<file>` segment is documentation; the runner indexes by definition name only.
+4. Validates `data` against the resolved sub-schema (with the parent `$defs` injected so nested `$ref`s resolve), forcing JSON Schema draft-2020-12 so `$ref` siblings (`properties`, `required`, `pattern`, etc.) layer onto the inherited base schema.
+5. Asserts:
+   - Validation outcome matches `expected_valid`.
+   - For valid fixtures: parse → serialize → re-parse produces the same value when `expected_round_trip` is `true` (canonicalization rule TBD; runners use a stable JSON serializer + sorted keys).
+   - `expected_error_code` is reported in the JSON output but not enforced as a strict mapping in v0.1.
+6. Emits the JSON output object specified in [`../../docs/CONFORMANCE.md`](../../docs/CONFORMANCE.md) §4.1: `{ tap_version_target, suite_version, fixtures_total, fixtures_passed, fixtures_failed, fixtures_skipped, failures[] }`. Written to stdout and (if set) to `$TAP_CONFORMANCE_REPORT`.
+7. Exits 0 on full pass, 1 on any failure, 2 on internal runner error (per [`../../docs/CONFORMANCE.md`](../../docs/CONFORMANCE.md) §4.2).
+
+## Running the suite
+
+```bash
+# Generate or refresh the JSON Schema document the runners read from.
+bazel run //tools/codegen:generate
+
+# Rust (cargo because Bazel doesn't yet wire crate-universe).
+( cd crates/tap-protocol && cargo test --test conformance )
+
+# Go.
+( cd pkg/protocol && go test -run TestConformanceSuite )
+
+# TypeScript (compiles to dist/, then runs node --test).
+pnpm --filter @tap/protocol test
+```
+
+CI runs these in the `bazel`, `conformance`, and `typescript` jobs (see [`../../.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
 
 ## Adding a fixture
 
 1. Add the JSON file under the relevant subdirectory.
-2. If exercising a new schema, ensure `schema_ref` resolves to a definition in `protocol/schemas/`.
-3. Run the conformance suite: `bazel test //protocol/conformance/...`.
-4. All three language runners must pass.
+2. If exercising a new schema, ensure `schema_ref` resolves to a definition in `protocol/schemas/codegen_export.cue`'s `CodegenRoot` (add an entry there if missing).
+3. Run the per-language commands above. All three runners must pass.
 
 ## Coverage targets
 

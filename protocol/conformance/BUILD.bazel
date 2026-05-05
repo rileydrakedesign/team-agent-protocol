@@ -10,6 +10,11 @@ filegroup(
     ),
 )
 
+filegroup(
+    name = "version",
+    srcs = ["VERSION"],
+)
+
 # Per-language conformance test runners are wired in:
 #   crates/tap-protocol/tests/BUILD.bazel
 #   pkg/protocol/BUILD.bazel

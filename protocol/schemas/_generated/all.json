@@ -1,0 +1,1336 @@
+{
+  "$defs": {
+    "AgentAwarenessRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "attached_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "dirty_files": {
+          "items": {
+            "$ref": "#/$defs/DirtyFile"
+          },
+          "type": "array"
+        },
+        "intent": {
+          "$ref": "#/$defs/Intent"
+        },
+        "last_heartbeat_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "worktree": {
+          "$ref": "#/$defs/WorktreePath"
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "developer_id",
+        "worktree"
+      ],
+      "type": "object"
+    },
+    "AgentDeregister": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "agent.deregister"
+        },
+        "params": {
+          "$ref": "#/$defs/AgentDeregisterParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "AgentDeregisterParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "reason": {
+          "pattern": "^[a-z][a-z0-9_]{0,31}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent_id",
+        "developer_id"
+      ],
+      "type": "object"
+    },
+    "AgentDisconnect": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "agent.disconnect"
+        },
+        "params": {
+          "$ref": "#/$defs/AgentDisconnectParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "AgentDisconnectParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "detail": {
+          "pattern": "^[\\x20-\\x7e]{0,256}$",
+          "type": "string"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "reason": {
+          "$ref": "#/$defs/DisconnectReason"
+        }
+      },
+      "required": [
+        "agent_id",
+        "developer_id",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "AgentHeartbeat": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "agent.heartbeat"
+        },
+        "params": {
+          "$ref": "#/$defs/AgentHeartbeatParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "AgentHeartbeatParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "dirty_file_count": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "intent": {
+          "$ref": "#/$defs/Intent"
+        },
+        "sequence": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "developer_id",
+        "dirty_file_count",
+        "sequence"
+      ],
+      "type": "object"
+    },
+    "AgentId": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "AgentRegisterParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "capabilities": {
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "type": "array"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "editor": {
+          "$ref": "#/$defs/Editor"
+        },
+        "machine_id": {
+          "$ref": "#/$defs/MachineId"
+        },
+        "repo": {
+          "$ref": "#/$defs/RepoUrl"
+        },
+        "session_id": {
+          "pattern": "^[0-9a-f-]{36}$",
+          "type": "string"
+        },
+        "worktree": {
+          "$ref": "#/$defs/WorktreePath"
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "developer_id",
+        "editor",
+        "machine_id",
+        "repo",
+        "session_id",
+        "worktree"
+      ],
+      "type": "object"
+    },
+    "AgentRegisterRequest": {
+      "$ref": "#/$defs/Request",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "agent.register"
+        },
+        "params": {
+          "$ref": "#/$defs/AgentRegisterParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "AgentRegisterResponse": {
+      "$ref": "#/$defs/Response",
+      "additionalProperties": true,
+      "properties": {
+        "result": {
+          "$ref": "#/$defs/AgentRegisterResult"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object"
+    },
+    "AgentRegisterResult": {
+      "additionalProperties": false,
+      "properties": {
+        "awareness_scope": {
+          "additionalProperties": false,
+          "properties": {
+            "branches": {
+              "items": {
+                "$ref": "#/$defs/BranchName"
+              },
+              "type": "array"
+            },
+            "developers": {
+              "items": {
+                "$ref": "#/$defs/DeveloperId"
+              },
+              "type": "array"
+            },
+            "repo": {
+              "$ref": "#/$defs/RepoUrl"
+            }
+          },
+          "required": [
+            "repo"
+          ],
+          "type": "object"
+        },
+        "session_token": {
+          "pattern": "^tap_sess_[A-Za-z0-9_-]{32,}$",
+          "type": "string"
+        },
+        "tap_version": {
+          "$ref": "#/$defs/SemVer"
+        }
+      },
+      "required": [
+        "awareness_scope",
+        "session_token",
+        "tap_version"
+      ],
+      "type": "object"
+    },
+    "AwarenessScope": {
+      "additionalProperties": false,
+      "properties": {
+        "branches": {
+          "items": {
+            "$ref": "#/$defs/BranchName"
+          },
+          "type": "array"
+        },
+        "developers": {
+          "items": {
+            "$ref": "#/$defs/DeveloperId"
+          },
+          "type": "array"
+        },
+        "repo": {
+          "$ref": "#/$defs/RepoUrl"
+        }
+      },
+      "required": [
+        "repo"
+      ],
+      "type": "object"
+    },
+    "BranchName": {
+      "allOf": [
+        {
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "not": {
+            "pattern": "^\\."
+          },
+          "pattern": "^[A-Za-z0-9_./-]{1,255}$",
+          "type": "string"
+        }
+      ]
+    },
+    "Capability": {
+      "pattern": "^[a-z][a-z0-9._-]*$",
+      "type": "string"
+    },
+    "Confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "type": "number"
+    },
+    "ConflictCheckParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "intended_writes": {
+          "items": {
+            "$ref": "#/$defs/IntendedWrite"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "repo": {
+          "$ref": "#/$defs/RepoUrl"
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "developer_id",
+        "intended_writes",
+        "repo"
+      ],
+      "type": "object"
+    },
+    "ConflictCheckRequest": {
+      "$ref": "#/$defs/Request",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "conflict.check"
+        },
+        "params": {
+          "$ref": "#/$defs/ConflictCheckParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "ConflictCheckResponse": {
+      "$ref": "#/$defs/Response",
+      "additionalProperties": true,
+      "properties": {
+        "result": {
+          "$ref": "#/$defs/ConflictCheckResult"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object"
+    },
+    "ConflictCheckResult": {
+      "additionalProperties": false,
+      "properties": {
+        "checked_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "conflicts": {
+          "items": {
+            "$ref": "#/$defs/ConflictReport"
+          },
+          "type": "array"
+        },
+        "level_reached": {
+          "$ref": "#/$defs/ConflictLevel"
+        },
+        "partial": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "checked_at",
+        "level_reached",
+        "partial"
+      ],
+      "type": "object"
+    },
+    "ConflictDeclareParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "reason": {
+          "pattern": "^[\\x20-\\x7e]{0,128}$",
+          "type": "string"
+        },
+        "repo": {
+          "$ref": "#/$defs/RepoUrl"
+        },
+        "targets": {
+          "items": {
+            "$ref": "#/$defs/IntendedWrite"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "ttl_seconds": {
+          "$ref": "#/$defs/TtlSeconds"
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "developer_id",
+        "repo",
+        "targets",
+        "ttl_seconds"
+      ],
+      "type": "object"
+    },
+    "ConflictDeclareRequest": {
+      "$ref": "#/$defs/Request",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "conflict.declare"
+        },
+        "params": {
+          "$ref": "#/$defs/ConflictDeclareParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "ConflictDeclareResponse": {
+      "$ref": "#/$defs/Response",
+      "additionalProperties": true,
+      "properties": {
+        "result": {
+          "$ref": "#/$defs/ConflictDeclareResult"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object"
+    },
+    "ConflictDeclareResult": {
+      "additionalProperties": false,
+      "properties": {
+        "declaration_id": {
+          "pattern": "^tap_decl_[A-Za-z0-9_-]{16,}$",
+          "type": "string"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "required": [
+        "declaration_id",
+        "expires_at"
+      ],
+      "type": "object"
+    },
+    "ConflictLevel": {
+      "enum": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "ConflictNotify": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "conflict.notify"
+        },
+        "params": {
+          "$ref": "#/$defs/ConflictNotifyParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "ConflictNotifyParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "conflicts": {
+          "items": {
+            "$ref": "#/$defs/ConflictReport"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "detected_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "repo": {
+          "$ref": "#/$defs/RepoUrl"
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "conflicts",
+        "detected_at",
+        "developer_id",
+        "repo"
+      ],
+      "type": "object"
+    },
+    "ConflictRelease": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "conflict.release"
+        },
+        "params": {
+          "$ref": "#/$defs/ConflictReleaseParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "ConflictReleaseParams": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "declaration_id": {
+          "pattern": "^tap_decl_[A-Za-z0-9_-]{16,}$",
+          "type": "string"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        }
+      },
+      "required": [
+        "agent_id",
+        "declaration_id",
+        "developer_id"
+      ],
+      "type": "object"
+    },
+    "ConflictReport": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "file": {
+          "$ref": "#/$defs/FilePath"
+        },
+        "level": {
+          "$ref": "#/$defs/ConflictLevel"
+        },
+        "message": {
+          "pattern": "^[\\x20-\\x7e]{0,256}$",
+          "type": "string"
+        },
+        "overlap_hunks": {
+          "items": {
+            "$ref": "#/$defs/HunkOverlap"
+          },
+          "type": "array"
+        },
+        "symbol": {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_.:]{0,255}$",
+          "type": "string"
+        },
+        "with": {
+          "$ref": "#/$defs/PeerRef"
+        }
+      },
+      "required": [
+        "confidence",
+        "file",
+        "level",
+        "with"
+      ],
+      "type": "object"
+    },
+    "DeveloperId": {
+      "pattern": "^[a-z0-9][a-z0-9-]{0,38}$",
+      "type": "string"
+    },
+    "DirtyFile": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "$ref": "#/$defs/FilePath"
+        },
+        "hunks": {
+          "items": {
+            "$ref": "#/$defs/Hunk"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "file",
+        "hunks"
+      ],
+      "type": "object"
+    },
+    "DisconnectReason": {
+      "enum": [
+        "version_unsupported",
+        "policy_violation",
+        "idle_timeout",
+        "auth_revoked",
+        "server_shutdown",
+        "client_error"
+      ]
+    },
+    "Editor": {
+      "anyOf": [
+        {
+          "const": "claude-code"
+        },
+        {
+          "const": "cursor"
+        },
+        {
+          "const": "codex"
+        },
+        {
+          "const": "aider"
+        },
+        {
+          "const": "generic-mcp"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "Envelope": {
+      "additionalProperties": true,
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "tap_version": {
+          "$ref": "#/$defs/SemVer"
+        },
+        "trace_id": {
+          "$ref": "#/$defs/TraceID"
+        }
+      },
+      "required": [
+        "tap_version",
+        "trace_id"
+      ],
+      "type": "object"
+    },
+    "FilePath": {
+      "allOf": [
+        {
+          "not": {
+            "pattern": "^\\.\\.$"
+          }
+        },
+        {
+          "not": {
+            "pattern": "/\\.\\./"
+          }
+        },
+        {
+          "not": {
+            "pattern": "\\.\\./"
+          },
+          "pattern": "^[A-Za-z0-9._-][A-Za-z0-9._/-]{0,999}$",
+          "type": "string"
+        }
+      ]
+    },
+    "Hunk": {
+      "additionalProperties": false,
+      "properties": {
+        "end_line": {
+          "$ref": "#/$defs/LineNumber"
+        },
+        "op": {
+          "$ref": "#/$defs/HunkOp"
+        },
+        "start_line": {
+          "$ref": "#/$defs/LineNumber"
+        }
+      },
+      "required": [
+        "end_line",
+        "op",
+        "start_line"
+      ],
+      "type": "object"
+    },
+    "HunkOp": {
+      "enum": [
+        "insert",
+        "delete",
+        "modify"
+      ]
+    },
+    "HunkOverlap": {
+      "additionalProperties": false,
+      "properties": {
+        "mine": {
+          "$ref": "#/$defs/Hunk"
+        },
+        "theirs": {
+          "$ref": "#/$defs/Hunk"
+        }
+      },
+      "required": [
+        "mine",
+        "theirs"
+      ],
+      "type": "object"
+    },
+    "IntendedWrite": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "$ref": "#/$defs/FilePath"
+        },
+        "hunks": {
+          "items": {
+            "$ref": "#/$defs/Hunk"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "type": "object"
+    },
+    "Intent": {
+      "pattern": "^[^\\x00-\\x1f\\x7f]{0,256}$",
+      "type": "string"
+    },
+    "JSONRPCId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "LineNumber": {
+      "allOf": [
+        {
+          "type": "number"
+        },
+        {
+          "maximum": 2000000.0,
+          "minimum": 1,
+          "type": "integer"
+        }
+      ]
+    },
+    "MachineId": {
+      "pattern": "^[0-9a-f]{32}$",
+      "type": "string"
+    },
+    "Notification": {
+      "$ref": "#/$defs/Envelope",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "not": {
+            "const": ""
+          },
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "PeerRef": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "branch": {
+          "$ref": "#/$defs/BranchName"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        }
+      },
+      "required": [
+        "agent_id",
+        "branch",
+        "developer_id"
+      ],
+      "type": "object"
+    },
+    "RepoUrl": {
+      "pattern": "^(https://|git@)[A-Za-z0-9._-]+(/|:)[A-Za-z0-9._/-]+(\\.git)?$",
+      "type": "string"
+    },
+    "Request": {
+      "$ref": "#/$defs/Envelope",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/JSONRPCId",
+          "not": {
+            "const": null
+          }
+        },
+        "method": {
+          "not": {
+            "const": ""
+          },
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "method"
+      ],
+      "type": "object"
+    },
+    "Response": {
+      "$ref": "#/$defs/Envelope",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/JSONRPCId"
+        },
+        "result": {
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "SemVer": {
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-.]+)?(?:\\+[0-9A-Za-z-.]+)?$",
+      "type": "string"
+    },
+    "StateAnnounce": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "state.announce"
+        },
+        "params": {
+          "$ref": "#/$defs/StateAnnounceParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "StateAnnounceParams": {
+      "additionalProperties": false,
+      "properties": {
+        "record": {
+          "$ref": "#/$defs/AgentAwarenessRecord"
+        },
+        "repo": {
+          "$ref": "#/$defs/RepoUrl"
+        },
+        "sequence": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "record",
+        "repo",
+        "sequence"
+      ],
+      "type": "object"
+    },
+    "StateDiff": {
+      "$ref": "#/$defs/Notification",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "state.diff"
+        },
+        "params": {
+          "$ref": "#/$defs/StateDiffParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "StateDiffChange": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "$ref": "#/$defs/AgentId"
+        },
+        "developer_id": {
+          "$ref": "#/$defs/DeveloperId"
+        },
+        "kind": {
+          "$ref": "#/$defs/StateDiffChangeKind"
+        },
+        "reason": {
+          "pattern": "^[a-z][a-z0-9_:-]{0,64}$",
+          "type": "string"
+        },
+        "record": {
+          "$ref": "#/$defs/AgentAwarenessRecord"
+        }
+      },
+      "required": [
+        "agent_id",
+        "developer_id",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "StateDiffChangeKind": {
+      "enum": [
+        "agent_attached",
+        "agent_detached",
+        "state_changed"
+      ]
+    },
+    "StateDiffParams": {
+      "additionalProperties": false,
+      "properties": {
+        "changes": {
+          "items": {
+            "$ref": "#/$defs/StateDiffChange"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "emitted_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "sequence": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "subscription_id": {
+          "$ref": "#/$defs/SubscriptionId"
+        }
+      },
+      "required": [
+        "changes",
+        "emitted_at",
+        "sequence",
+        "subscription_id"
+      ],
+      "type": "object"
+    },
+    "StateQueryParams": {
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/AwarenessScope"
+        },
+        "since": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "required": [
+        "scope"
+      ],
+      "type": "object"
+    },
+    "StateQueryRequest": {
+      "$ref": "#/$defs/Request",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "state.query"
+        },
+        "params": {
+          "$ref": "#/$defs/StateQueryParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "StateQueryResponse": {
+      "$ref": "#/$defs/Response",
+      "additionalProperties": true,
+      "properties": {
+        "result": {
+          "$ref": "#/$defs/StateQueryResult"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object"
+    },
+    "StateQueryResult": {
+      "additionalProperties": false,
+      "properties": {
+        "records": {
+          "items": {
+            "$ref": "#/$defs/AgentAwarenessRecord"
+          },
+          "type": "array"
+        },
+        "server_sequence": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "snapshot_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "required": [
+        "server_sequence",
+        "snapshot_at"
+      ],
+      "type": "object"
+    },
+    "StateSubscribeParams": {
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/AwarenessScope"
+        },
+        "since_sequence": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scope"
+      ],
+      "type": "object"
+    },
+    "StateSubscribeRequest": {
+      "$ref": "#/$defs/Request",
+      "additionalProperties": true,
+      "properties": {
+        "method": {
+          "const": "state.subscribe"
+        },
+        "params": {
+          "$ref": "#/$defs/StateSubscribeParams"
+        }
+      },
+      "required": [
+        "params"
+      ],
+      "type": "object"
+    },
+    "StateSubscribeResponse": {
+      "$ref": "#/$defs/Response",
+      "additionalProperties": true,
+      "properties": {
+        "result": {
+          "$ref": "#/$defs/StateSubscribeResult"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object"
+    },
+    "StateSubscribeResult": {
+      "additionalProperties": false,
+      "properties": {
+        "server_sequence": {
+          "allOf": [
+            {
+              "type": "number"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        },
+        "snapshot": {
+          "items": {
+            "$ref": "#/$defs/AgentAwarenessRecord"
+          },
+          "type": "array"
+        },
+        "subscription_id": {
+          "$ref": "#/$defs/SubscriptionId"
+        }
+      },
+      "required": [
+        "server_sequence",
+        "subscription_id"
+      ],
+      "type": "object"
+    },
+    "SubscriptionId": {
+      "pattern": "^tap_sub_[A-Za-z0-9_-]{16,}$",
+      "type": "string"
+    },
+    "Timestamp": {
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,9})?Z$",
+      "type": "string"
+    },
+    "TraceID": {
+      "pattern": "^[0-9a-f]{32}$",
+      "type": "string"
+    },
+    "TtlSeconds": {
+      "allOf": [
+        {
+          "type": "number"
+        },
+        {
+          "maximum": 3600,
+          "minimum": 1,
+          "type": "integer"
+        }
+      ]
+    },
+    "WorktreePath": {
+      "pattern": "^/[^\\x00]+[^/]$",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "AgentDeregister": {
+      "$ref": "#/$defs/AgentDeregister"
+    },
+    "AgentDisconnect": {
+      "$ref": "#/$defs/AgentDisconnect"
+    },
+    "AgentHeartbeat": {
+      "$ref": "#/$defs/AgentHeartbeat"
+    },
+    "AgentRegisterRequest": {
+      "$ref": "#/$defs/AgentRegisterRequest"
+    },
+    "AgentRegisterResponse": {
+      "$ref": "#/$defs/AgentRegisterResponse"
+    },
+    "ConflictCheckRequest": {
+      "$ref": "#/$defs/ConflictCheckRequest"
+    },
+    "ConflictCheckResponse": {
+      "$ref": "#/$defs/ConflictCheckResponse"
+    },
+    "ConflictDeclareRequest": {
+      "$ref": "#/$defs/ConflictDeclareRequest"
+    },
+    "ConflictDeclareResponse": {
+      "$ref": "#/$defs/ConflictDeclareResponse"
+    },
+    "ConflictNotify": {
+      "$ref": "#/$defs/ConflictNotify"
+    },
+    "ConflictRelease": {
+      "$ref": "#/$defs/ConflictRelease"
+    },
+    "Request": {
+      "$ref": "#/$defs/Request"
+    },
+    "StateAnnounce": {
+      "$ref": "#/$defs/StateAnnounce"
+    },
+    "StateDiff": {
+      "$ref": "#/$defs/StateDiff"
+    },
+    "StateQueryRequest": {
+      "$ref": "#/$defs/StateQueryRequest"
+    },
+    "StateQueryResponse": {
+      "$ref": "#/$defs/StateQueryResponse"
+    },
+    "StateSubscribeRequest": {
+      "$ref": "#/$defs/StateSubscribeRequest"
+    },
+    "StateSubscribeResponse": {
+      "$ref": "#/$defs/StateSubscribeResponse"
+    }
+  },
+  "required": [
+    "AgentDeregister",
+    "AgentDisconnect",
+    "AgentHeartbeat",
+    "AgentRegisterRequest",
+    "AgentRegisterResponse",
+    "ConflictCheckRequest",
+    "ConflictCheckResponse",
+    "ConflictDeclareRequest",
+    "ConflictDeclareResponse",
+    "ConflictNotify",
+    "ConflictRelease",
+    "Request",
+    "StateAnnounce",
+    "StateDiff",
+    "StateQueryRequest",
+    "StateQueryResponse",
+    "StateSubscribeRequest",
+    "StateSubscribeResponse"
+  ],
+  "type": "object"
+}

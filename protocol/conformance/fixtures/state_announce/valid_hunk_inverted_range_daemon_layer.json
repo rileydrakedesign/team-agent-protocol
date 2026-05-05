@@ -1,7 +1,7 @@
 {
   "$schema": "https://tap.dev/conformance/v1.json",
-  "name": "state.announce rejects inverted hunk range",
-  "description": "A hunk's end_line MUST be >= start_line. Inverted ranges are a schema error.",
+  "name": "state.announce: hunk with inverted range is wire-accepted; daemon enforces semantic constraint",
+  "description": "JSON Schema cannot express the cross-field invariant `end_line >= start_line`. The wire schema accepts this hunk; the TAP daemon enforces the invariant before adding it to its hunk diff tracker. This fixture pins that wire-level acceptance so implementations agree on the layer at which the invariant lives.",
   "schema_ref": "state_announce#StateAnnounce",
   "data": {
     "jsonrpc": "2.0",
@@ -27,7 +27,6 @@
       }
     }
   },
-  "expected_valid": false,
-  "expected_error_code": -32602,
-  "notes": "Inverted ranges would let a misbehaving daemon over-claim conflict surface; the schema rejects them at parse."
+  "expected_valid": true,
+  "notes": "See common.cue #Hunk for the rationale: JSON Schema cannot enforce sibling-field comparisons. The daemon's hunk diff tracker rejects inverted ranges; conformance for that layer is tested in Phase 2."
 }

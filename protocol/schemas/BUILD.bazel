@@ -7,6 +7,17 @@ filegroup(
     srcs = glob(["*.cue"]),
 )
 
+# Generated JSON Schema documents under _generated/. Populated by
+# `bazel run //tools/codegen:generate`. allow_empty = True so the test rules
+# that depend on this filegroup don't break before the first codegen run.
+filegroup(
+    name = "generated_schemas",
+    srcs = glob(
+        ["_generated/*.json"],
+        allow_empty = True,
+    ),
+)
+
 # Convenience target for `bazel build //protocol/schemas:all`.
 alias(
     name = "all",
