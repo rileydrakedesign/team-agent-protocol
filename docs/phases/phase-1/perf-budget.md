@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: 1
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -17,12 +17,12 @@ The project-level SLOs at [`../../../project-context.md` §3.3](../../../project
 
 These are developer-experience targets, not contracts.
 
-| Operation | Target | Measurement |
-|---|---|---|
-| `bazel run //tools/codegen:generate` (cold) | ≤ 60 s | wall-clock on commodity laptop. |
-| `bazel run //tools/codegen:generate` (warm) | ≤ 5 s | wall-clock with Bazel cache populated. |
-| `bazel test //...` (full) | ≤ 90 s in CI | GitHub Actions ubuntu-latest runner. |
-| Conformance runner (per language) | ≤ 2 s | full suite on local machine. |
+| Operation                                   | Target       | Measurement                            |
+| ------------------------------------------- | ------------ | -------------------------------------- |
+| `bazel run //tools/codegen:generate` (cold) | ≤ 60 s       | wall-clock on commodity laptop.        |
+| `bazel run //tools/codegen:generate` (warm) | ≤ 5 s        | wall-clock with Bazel cache populated. |
+| `bazel test //...` (full)                   | ≤ 90 s in CI | GitHub Actions ubuntu-latest runner.   |
+| Conformance runner (per language)           | ≤ 2 s        | full suite on local machine.           |
 
 If `bazel test //...` exceeds 5 minutes in CI, the deferred BuildBuddy remote-cache item in [`../../../project-context.md` §9.6](../../../project-context.md#96-deferred-items) is promoted from deferred to active.
 

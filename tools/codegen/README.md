@@ -2,7 +2,7 @@
 
 This directory owns the path from CUE schemas to language bindings:
 
-```
+```text
 protocol/schemas/*.cue
         │  (codegen_export.cue exposes the canonical wire-format
         │   definitions as concrete fields under `CodegenRoot` so
@@ -32,12 +32,12 @@ The pipeline emits a single `_generated/all.json` keyed by `$defs` and indexed b
 
 ## Why three different tools
 
-| Path | Tool | Why this choice |
-|---|---|---|
-| CUE → JSON Schema | `cue def --out=jsonschema` | Native CUE export. JSON Schema is the lingua franca for downstream codegen tooling. |
-| JSON Schema → Rust | [`cargo-typify`](https://github.com/oxidecomputer/typify) | Higher-quality Rust output than alternatives; produced by Oxide Computer; becoming the ecosystem standard. CLI is published as `cargo-typify`. **Currently disabled** — v0.6.2 panics on the TAP schemas' `allOf+not` patterns from `#FilePath`/`#BranchName` and on the type-narrowing `allOf` for `#LineNumber`/`#TtlSeconds`. The Rust runner validates via JSON Schema directly, so generated Rust types are not on Phase 1's critical path. Tracked as a deferred follow-up. |
-| JSON Schema → TypeScript | [`json-schema-to-typescript`](https://github.com/bcherny/json-schema-to-typescript) | Single-purpose, ~3M weekly downloads, ecosystem standard. |
-| CUE → Go | `cue exp gengotypes` | Official CUE-team path; bypasses the lossy JSON Schema hop. Emits one combined `cue_types_gen.go`; the script relocates it to `pkg/protocol/generated/types.go` and rewrites the `package` declaration. |
+| Path                     | Tool                                                                                | Why this choice                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CUE → JSON Schema        | `cue def --out=jsonschema`                                                          | Native CUE export. JSON Schema is the lingua franca for downstream codegen tooling.                                                                                                                                                                                                                                                                                                                                                                                               |
+| JSON Schema → Rust       | [`cargo-typify`](https://github.com/oxidecomputer/typify)                           | Higher-quality Rust output than alternatives; produced by Oxide Computer; becoming the ecosystem standard. CLI is published as `cargo-typify`. **Currently disabled** — v0.6.2 panics on the TAP schemas' `allOf+not` patterns from `#FilePath`/`#BranchName` and on the type-narrowing `allOf` for `#LineNumber`/`#TtlSeconds`. The Rust runner validates via JSON Schema directly, so generated Rust types are not on Phase 1's critical path. Tracked as a deferred follow-up. |
+| JSON Schema → TypeScript | [`json-schema-to-typescript`](https://github.com/bcherny/json-schema-to-typescript) | Single-purpose, ~3M weekly downloads, ecosystem standard.                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| CUE → Go                 | `cue exp gengotypes`                                                                | Official CUE-team path; bypasses the lossy JSON Schema hop. Emits one combined `cue_types_gen.go`; the script relocates it to `pkg/protocol/generated/types.go` and rewrites the `package` declaration.                                                                                                                                                                                                                                                                           |
 
 The asymmetry (Go bypasses JSON Schema) means Go output could diverge from Rust/TS for edge-case CUE features. The conformance suite is the safety net — if all three runners pass against the same fixtures, divergence is bounded to behavior conformance does not cover.
 

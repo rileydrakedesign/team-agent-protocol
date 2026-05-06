@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 component: <component-name>
 ---
@@ -17,24 +17,24 @@ Component-specific security posture. The project-wide threat model is at [`../..
 Boundaries the component sits across, with the auth and integrity controls at each.
 
 | Boundary | Other side | Auth | Integrity | Confidentiality |
-|---|---|---|---|---|
-| … | … | … | … | … |
+| -------- | ---------- | ---- | --------- | --------------- |
+| …        | …          | …    | …         | …               |
 
 ## 2. Sensitive data
 
 Data the component handles that has elevated sensitivity. For each: storage, transit, retention, access control.
 
 | Data | At rest | In transit | Retention | Access |
-|---|---|---|---|---|
-| … | … | … | … | … |
+| ---- | ------- | ---------- | --------- | ------ |
+| …    | …       | …          | …         | …      |
 
 ## 3. Cryptographic primitives used
 
 Which primitives, where. Cross-link to [`../../THREAT_MODEL.md`](../../THREAT_MODEL.md) §7.
 
 | Use | Primitive | Library |
-|---|---|---|
-| … | … | … |
+| --- | --------- | ------- |
+| …   | …         | …       |
 
 ## 4. Authentication
 

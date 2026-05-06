@@ -22,9 +22,9 @@ Phase 4 expands this corpus to cover messaging and consult content, where the at
 
 ## Fixture categories
 
-| Fixture prefix | Means |
-|---|---|
-| `negative_*` | Schema MUST reject; an attacker's smuggling attempt is contained at parse time. |
+| Fixture prefix             | Means                                                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `negative_*`               | Schema MUST reject; an attacker's smuggling attempt is contained at parse time.                                         |
 | `accepted_but_dangerous_*` | Schema accepts; positive fixture with `notes` documenting that consumers MUST NOT interpolate the content into prompts. |
 
 ## References

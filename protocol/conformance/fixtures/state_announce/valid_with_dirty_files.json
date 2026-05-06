@@ -27,9 +27,7 @@
           },
           {
             "file": "src/auth/mod.rs",
-            "hunks": [
-              { "start_line": 1, "end_line": 1, "op": "modify" }
-            ]
+            "hunks": [{ "start_line": 1, "end_line": 1, "op": "modify" }]
           }
         ]
       }

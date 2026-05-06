@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: 1
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -51,11 +51,11 @@ The following A2A primitives are adopted verbatim. TAP's wire format expresses t
 
 A2A defines an `Agent` as a discoverable, addressable entity with stable identity. TAP's `agent_id` (per [`../protocol/SPEC.md`](../protocol/SPEC.md) §4.2) is consistent with this model: ephemeral per session, but bound to a stable developer identity. The relay's discovery surface MAPS as follows:
 
-| A2A concept | TAP concept | Notes |
-|---|---|---|
-| Agent identifier | `agent_id` | Same role; TAP's derivation is more specific. |
-| Agent capabilities | `capabilities` field on `agent.register` | Same role. |
-| Agent endpoint | (relay-managed) | TAP does not expose direct agent-to-agent endpoints; routing goes through the relay. See §5.1. |
+| A2A concept        | TAP concept                              | Notes                                                                                          |
+| ------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Agent identifier   | `agent_id`                               | Same role; TAP's derivation is more specific.                                                  |
+| Agent capabilities | `capabilities` field on `agent.register` | Same role.                                                                                     |
+| Agent endpoint     | (relay-managed)                          | TAP does not expose direct agent-to-agent endpoints; routing goes through the relay. See §5.1. |
 
 ### 3.2 Discovery `[verify]`
 
@@ -71,17 +71,17 @@ TAP's `agent.register.capabilities[]` field uses A2A capability strings where th
 
 TAP introduces concepts A2A does not specify. These are TAP-original and do not interoperate with A2A peers.
 
-| TAP concept | Why outside A2A | Reference |
-|---|---|---|
-| Cross-developer awareness state | A2A is agent-pair oriented; TAP awareness is team-scoped. | [`../project-context.md` §3](../project-context.md#3-system-overview), [`../protocol/SPEC.md`](../protocol/SPEC.md) §7 |
-| Conflict detection | Development-domain primitive; not a generic agent-protocol concern. | [`../project-context.md` §7](../project-context.md#7-conflict-detection-engine), [`../protocol/SPEC.md`](../protocol/SPEC.md) §8 |
-| Consults | A2A messages are one-shot or RPC-style; TAP consults are stateful, multi-turn, multi-party with lifecycle. | [`../project-context.md` §6.3](../project-context.md#63-message-taxonomy), Phase 4 |
-| Trust pairs | Per-developer-pair directional trust state with signed mutations. | [`../project-context.md` §6.2](../project-context.md#62-identity), Phase 4 |
-| Scopes | Five-value privilege ladder bound to messages and consults. | [`GLOSSARY.md`](GLOSSARY.md), Phase 4 |
-| Approval gates | Human-in-the-loop primitive bound to scope. | [`../protocol/SPEC.md`](../protocol/SPEC.md) §12, Phase 4 |
-| Policy DSL | Per-repo and per-user policy with rate limits, redaction, auto-accept. | Phase 4 |
-| Audit chain | Cryptographically chained audit log over all TAP messages. | [`../project-context.md` §2](../project-context.md#2-locked-architectural-decisions), [`THREAT_MODEL.md`](THREAT_MODEL.md) §4.3 |
-| Sandboxing rule | Inbound message content is never prepended into a peer's prompt. | [`THREAT_MODEL.md`](THREAT_MODEL.md) §5 |
+| TAP concept                     | Why outside A2A                                                                                            | Reference                                                                                                                        |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Cross-developer awareness state | A2A is agent-pair oriented; TAP awareness is team-scoped.                                                  | [`../project-context.md` §3](../project-context.md#3-system-overview), [`../protocol/SPEC.md`](../protocol/SPEC.md) §7           |
+| Conflict detection              | Development-domain primitive; not a generic agent-protocol concern.                                        | [`../project-context.md` §7](../project-context.md#7-conflict-detection-engine), [`../protocol/SPEC.md`](../protocol/SPEC.md) §8 |
+| Consults                        | A2A messages are one-shot or RPC-style; TAP consults are stateful, multi-turn, multi-party with lifecycle. | [`../project-context.md` §6.3](../project-context.md#63-message-taxonomy), Phase 4                                               |
+| Trust pairs                     | Per-developer-pair directional trust state with signed mutations.                                          | [`../project-context.md` §6.2](../project-context.md#62-identity), Phase 4                                                       |
+| Scopes                          | Five-value privilege ladder bound to messages and consults.                                                | [`GLOSSARY.md`](GLOSSARY.md), Phase 4                                                                                            |
+| Approval gates                  | Human-in-the-loop primitive bound to scope.                                                                | [`../protocol/SPEC.md`](../protocol/SPEC.md) §12, Phase 4                                                                        |
+| Policy DSL                      | Per-repo and per-user policy with rate limits, redaction, auto-accept.                                     | Phase 4                                                                                                                          |
+| Audit chain                     | Cryptographically chained audit log over all TAP messages.                                                 | [`../project-context.md` §2](../project-context.md#2-locked-architectural-decisions), [`THREAT_MODEL.md`](THREAT_MODEL.md) §4.3  |
+| Sandboxing rule                 | Inbound message content is never prepended into a peer's prompt.                                           | [`THREAT_MODEL.md`](THREAT_MODEL.md) §5                                                                                          |
 
 A2A peers without TAP support do not see, request, or interfere with the extending surface. Conversely, TAP peers SHOULD NOT assume A2A peers can interoperate at the extending surface.
 

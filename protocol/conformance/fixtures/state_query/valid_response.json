@@ -27,9 +27,7 @@
           "dirty_files": [
             {
               "file": "README.md",
-              "hunks": [
-                { "start_line": 12, "end_line": 18, "op": "modify" }
-              ]
+              "hunks": [{ "start_line": 12, "end_line": 18, "op": "modify" }]
             }
           ],
           "intent": "fixing typos in README"

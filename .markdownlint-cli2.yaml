@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# markdownlint-cli2 config for TAP. Both rule config and glob/ignore patterns
+# live in this single file per markdownlint-cli2 convention.
+# See: https://github.com/DavidAnson/markdownlint-cli2
+
+# Files to lint. Run as: `npx markdownlint-cli2`
+globs:
+  - "docs/**/*.md"
+  - "*.md"
+  - "protocol/SPEC.md"
+
+# Files to skip even when matched by globs above.
+ignores:
+  # Templates use placeholder values (NNNN, YYYY-MM-DD, "<reason>", "<one-sentence>")
+  # that intentionally trip rules. They are skeletons, not real docs.
+  - "docs/phases/_template/**"
+  - "docs/components/_template/**"
+  - "docs/runbooks/_template.md"
+  - "docs/rfcs/0000-template.md"
+  # Generated artifacts.
+  - "**/generated/**"
+  - "**/_generated/**"
+  # Vendored dependencies.
+  - "node_modules/**"
+  - "vendor/**"
+  - "target/**"
+  - "bazel-*/**"
+  # Conformance fixtures contain literal control bytes / adversarial JSON; markdown rules don't apply.
+  - "protocol/conformance/**"
+  - "CHANGELOG.md"
+
+# Rule configuration. Reference: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+config:
+  default: true
+
+  # MD013 line-length — TAP prose uses long lines for readability in raw markdown.
+  # Wrapping at 80 cols hurts diffs and PR review. Off.
+  MD013: false
+
+  # MD024 no-duplicate-headings — allow same heading text across non-sibling sections
+  # (e.g. "**Question.**" subheads under multiple `### Q-1-NNN` open questions).
+  MD024:
+    siblings_only: true
+
+  # MD025 single-h1 — exactly one H1 per file. Front-matter doesn't count.
+  MD025:
+    front_matter_title: ""
+
+  # MD033 no-inline-html — TAP docs use a small set of HTML tags in tables and
+  # section anchors. Allowlist them; everything else still warns.
+  MD033:
+    allowed_elements:
+      - br
+      - details
+      - summary
+      - sub
+      - sup
+
+  # MD036 no-emphasis-as-heading — disabled. Single-line italic paragraphs like
+  # `*(Phase 4. Not specified in this draft.)*` and changelog `*2026-04-28:*` markers
+  # are intentional in the corpus; the heuristic produces false positives.
+  MD036: false
+
+  # MD041 first-line-h1 — disabled because every TAP doc starts with YAML front-matter,
+  # not an H1. Front-matter is the first content block.
+  MD041: false
+
+  # MD046 code-block-style — fenced code blocks only.
+  MD046:
+    style: fenced
+
+  # MD048 code-fence-style — backticks, not tildes.
+  MD048:
+    style: backtick
+
+  # MD049 emphasis-style — underscores for italic. Prettier (which is in our
+  # pre-commit chain) emits `_italic_` and provides no option to change it,
+  # so the linter follows.
+  MD049:
+    style: underscore
+
+  # MD050 strong-style — asterisks for bold. Matches prettier output and the corpus.
+  MD050:
+    style: asterisk
+
+  # MD060 table-column-style — disabled. The "consistent" auto-detector mis-infers
+  # style from short tables and produces noise; corpus tables are consistently padded.
+  MD060: false

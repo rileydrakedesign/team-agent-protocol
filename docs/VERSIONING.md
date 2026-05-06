@@ -1,7 +1,7 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -15,14 +15,14 @@ The protocol version is independent from component versions. The protocol is wha
 
 ## 1. Scope
 
-| Versioned thing | Versioning scheme | Source of truth |
-|---|---|---|
-| Protocol (TAP wire format) | Semantic versioning, `MAJOR.MINOR.PATCH` | This document and [`../protocol/SPEC.md`](../protocol/SPEC.md) §5 |
-| Daemon | Semantic versioning per release | `crates/tap-daemon/Cargo.toml` (Phase 2+) |
-| Relay | Semantic versioning per release | `pkg/relay/...` build metadata (Phase 3+) |
-| SDKs (Rust, Go, TypeScript) | Semantic versioning per release | Native package manifests |
-| Adapters | Semantic versioning per release | Adapter source repos |
-| Conformance suite | Pinned to a protocol version | `protocol/conformance/VERSION` |
+| Versioned thing             | Versioning scheme                        | Source of truth                                                   |
+| --------------------------- | ---------------------------------------- | ----------------------------------------------------------------- |
+| Protocol (TAP wire format)  | Semantic versioning, `MAJOR.MINOR.PATCH` | This document and [`../protocol/SPEC.md`](../protocol/SPEC.md) §5 |
+| Daemon                      | Semantic versioning per release          | `crates/tap-daemon/Cargo.toml` (Phase 2+)                         |
+| Relay                       | Semantic versioning per release          | `pkg/relay/...` build metadata (Phase 3+)                         |
+| SDKs (Rust, Go, TypeScript) | Semantic versioning per release          | Native package manifests                                          |
+| Adapters                    | Semantic versioning per release          | Adapter source repos                                              |
+| Conformance suite           | Pinned to a protocol version             | `protocol/conformance/VERSION`                                    |
 
 Component versions and the protocol version evolve at different rates. A daemon at v3.4.1 may speak protocol v0.2.0; a v4.0.0 daemon may still speak v0.2.0. Component releases never bump the protocol version implicitly.
 
@@ -83,7 +83,7 @@ The daemon advertises its supported protocol version in the `agent.register` req
 
 ### 3.2 Algorithm
 
-```
+```text
 function negotiate(client_version, server_versions_supported):
   if client_version.major not in {v.major for v in server_versions_supported}:
     return error(code=1001, "Version unsupported")

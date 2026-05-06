@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 ---
 
@@ -15,23 +15,23 @@ A phase does not exit until every category here has its target met; see [`exit.m
 
 ## 1. Test taxonomy
 
-| Category | What it covers | Where it lives | CI gate |
-|---|---|---|---|
-| Unit | Individual functions, modules. | Adjacent to source. | Blocking. |
-| Integration | Component-level behavior across modules. | `<component>/tests/integration/`. | Blocking. |
-| Conformance | Wire-format spec compliance. | [`../../../protocol/conformance/`](../../../protocol/conformance/). | Blocking. |
-| Performance | SLO regression checks. | `<component>/tests/perf/`. | Blocking on regression. |
-| Chaos | Crash safety, partition tolerance, resource exhaustion. | `<component>/tests/chaos/`. | Phase exit. |
-| Security | Negative-fixture / abuse-pattern coverage. | `<component>/tests/security/` and `protocol/conformance/fixtures/sandboxing/`. | Blocking. |
-| End-to-end | Full-stack scenario tests representative of the ship-criterion scenario. | `tests/e2e/phase-N/`. | Phase exit. |
+| Category    | What it covers                                                           | Where it lives                                                                 | CI gate                 |
+| ----------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------- |
+| Unit        | Individual functions, modules.                                           | Adjacent to source.                                                            | Blocking.               |
+| Integration | Component-level behavior across modules.                                 | `<component>/tests/integration/`.                                              | Blocking.               |
+| Conformance | Wire-format spec compliance.                                             | [`../../../protocol/conformance/`](../../../protocol/conformance/).            | Blocking.               |
+| Performance | SLO regression checks.                                                   | `<component>/tests/perf/`.                                                     | Blocking on regression. |
+| Chaos       | Crash safety, partition tolerance, resource exhaustion.                  | `<component>/tests/chaos/`.                                                    | Phase exit.             |
+| Security    | Negative-fixture / abuse-pattern coverage.                               | `<component>/tests/security/` and `protocol/conformance/fixtures/sandboxing/`. | Blocking.               |
+| End-to-end  | Full-stack scenario tests representative of the ship-criterion scenario. | `tests/e2e/phase-N/`.                                                          | Phase exit.             |
 
 ---
 
 ## 2. Coverage targets
 
-| Component | Unit | Integration | Comments |
-|---|---|---|---|
-| … | ≥ 80% | ≥ 60% | … |
+| Component | Unit  | Integration | Comments |
+| --------- | ----- | ----------- | -------- |
+| …         | ≥ 80% | ≥ 60%       | …        |
 
 Coverage is measured per language tool (`cargo llvm-cov` for Rust, `go test -cover` for Go, `vitest --coverage` for TS). The target applies to lines and to branches.
 
@@ -41,9 +41,9 @@ Coverage is measured per language tool (`cargo llvm-cov` for Rust, `go test -cov
 
 List the fixture additions this phase requires.
 
-| Path | Type | Purpose |
-|---|---|---|
-| `protocol/conformance/fixtures/<category>/<name>.json` | positive / negative | … |
+| Path                                                   | Type                | Purpose |
+| ------------------------------------------------------ | ------------------- | ------- |
+| `protocol/conformance/fixtures/<category>/<name>.json` | positive / negative | …       |
 
 Fixture authoring rules: [`../../SPEC_STYLE.md`](../../SPEC_STYLE.md) §7.
 
@@ -53,9 +53,9 @@ Fixture authoring rules: [`../../SPEC_STYLE.md`](../../SPEC_STYLE.md) §7.
 
 Each scenario has a name, an SLO target (from [`perf-budget.md`](perf-budget.md)), and a measurement procedure.
 
-| Scenario | SLO | Measurement |
-|---|---|---|
-| … | P95 ≤ … | Bench at `…`. |
+| Scenario | SLO     | Measurement   |
+| -------- | ------- | ------------- |
+| …        | P95 ≤ … | Bench at `…`. |
 
 CI fails if a scenario regresses by more than 5% relative to the rolling baseline.
 
@@ -91,15 +91,15 @@ The scenarios that operationalize the [`README.md`](README.md) §4 ship criterio
 
 Each test category names an owner who is responsible for keeping it green.
 
-| Category | Owner |
-|---|---|
-| Unit | Per-component author. |
-| Integration | … |
-| Conformance | Spec maintainers. |
-| Performance | … |
-| Chaos | … |
-| Security | … |
-| End-to-end | Phase lead. |
+| Category    | Owner                 |
+| ----------- | --------------------- |
+| Unit        | Per-component author. |
+| Integration | …                     |
+| Conformance | Spec maintainers.     |
+| Performance | …                     |
+| Chaos       | …                     |
+| Security    | …                     |
+| End-to-end  | Phase lead.           |
 
 ---
 

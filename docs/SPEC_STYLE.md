@@ -1,7 +1,7 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -32,13 +32,13 @@ Non-binding. Provides context, examples, motivation, or rationale. SHOULD NOT co
 
 Per RFC 2119 / RFC 8174:
 
-| Keyword | Meaning |
-|---|---|
-| MUST, SHALL, REQUIRED | Absolute requirement. |
-| MUST NOT, SHALL NOT | Absolute prohibition. |
-| SHOULD, RECOMMENDED | Strongly suggested; deviation requires careful justification documented in implementation notes. |
-| SHOULD NOT, NOT RECOMMENDED | Strongly discouraged; deviation requires careful justification. |
-| MAY, OPTIONAL | Truly optional. Implementations choose. |
+| Keyword                     | Meaning                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------ |
+| MUST, SHALL, REQUIRED       | Absolute requirement.                                                                            |
+| MUST NOT, SHALL NOT         | Absolute prohibition.                                                                            |
+| SHOULD, RECOMMENDED         | Strongly suggested; deviation requires careful justification documented in implementation notes. |
+| SHOULD NOT, NOT RECOMMENDED | Strongly discouraged; deviation requires careful justification.                                  |
+| MAY, OPTIONAL               | Truly optional. Implementations choose.                                                          |
 
 These keywords appear in uppercase only when used as RFC 2119 keywords. Lowercase "must" and "should" in prose are not normative.
 
@@ -48,17 +48,17 @@ These keywords appear in uppercase only when used as RFC 2119 keywords. Lowercas
 
 JSON-RPC methods use the form `category.action` with both parts in `snake_case`.
 
-| Form | Example |
-|---|---|
+| Form      | Example                                                                     |
+| --------- | --------------------------------------------------------------------------- |
 | Lifecycle | `agent.register`, `agent.heartbeat`, `agent.deregister`, `agent.disconnect` |
-| Awareness | `state.announce`, `state.query`, `state.subscribe`, `state.diff` |
-| Conflict | `conflict.check`, `conflict.declare`, `conflict.release`, `conflict.notify` |
-| Messaging | `msg.send`, `msg.deliver`, `msg.ack`, `msg.error` |
-| Consults | `consult.request`, `consult.accept`, `consult.message`, `consult.resolve` |
-| Tasks | `task.handoff`, `task.accept`, `task.update`, `task.complete` |
-| Policy | `policy.evaluate` |
-| Trust | `trust.grant`, `trust.revoke` |
-| Approval | `approval.request`, `approval.respond` |
+| Awareness | `state.announce`, `state.query`, `state.subscribe`, `state.diff`            |
+| Conflict  | `conflict.check`, `conflict.declare`, `conflict.release`, `conflict.notify` |
+| Messaging | `msg.send`, `msg.deliver`, `msg.ack`, `msg.error`                           |
+| Consults  | `consult.request`, `consult.accept`, `consult.message`, `consult.resolve`   |
+| Tasks     | `task.handoff`, `task.accept`, `task.update`, `task.complete`               |
+| Policy    | `policy.evaluate`                                                           |
+| Trust     | `trust.grant`, `trust.revoke`                                               |
+| Approval  | `approval.request`, `approval.respond`                                      |
 
 Rules:
 
@@ -75,12 +75,12 @@ Rules:
 
 `snake_case`. No abbreviations except those listed in [`GLOSSARY.md`](GLOSSARY.md) Acronyms (e.g., `jwt`, `mtls`).
 
-| Good | Bad |
-|---|---|
-| `agent_id` | `agentId`, `AgentID`, `agent-id` |
-| `tap_version` | `tapVersion`, `version` |
-| `developer_id` | `dev_id`, `userId` |
-| `start_line` | `startLine`, `start` |
+| Good           | Bad                              |
+| -------------- | -------------------------------- |
+| `agent_id`     | `agentId`, `AgentID`, `agent-id` |
+| `tap_version`  | `tapVersion`, `version`          |
+| `developer_id` | `dev_id`, `userId`               |
+| `start_line`   | `startLine`, `start`             |
 
 ### 3.2 CUE definitions
 
@@ -110,14 +110,14 @@ CUE definitions mark optional fields with `?:`. Spec prose lists every field as 
 
 ## 4. Identifier formats
 
-| Identifier | Format | Source of truth |
-|---|---|---|
+| Identifier     | Format                                           | Source of truth                                                        |
+| -------------- | ------------------------------------------------ | ---------------------------------------------------------------------- |
 | `developer_id` | Lowercase ASCII; matches identity provider login | [`../protocol/schemas/identity.cue`](../protocol/schemas/identity.cue) |
-| `agent_id` | 64 lowercase hex characters | [`../protocol/SPEC.md`](../protocol/SPEC.md) §4.2 |
-| `machine_id` | UUIDv4 | identity.cue |
-| `session_id` | UUIDv4 | identity.cue |
-| `trace_id` | 32 lowercase hex characters (W3C Trace Context) | envelope.cue |
-| `tap_version` | semver `MAJOR.MINOR.PATCH` | envelope.cue, [`VERSIONING.md`](VERSIONING.md) |
+| `agent_id`     | 64 lowercase hex characters                      | [`../protocol/SPEC.md`](../protocol/SPEC.md) §4.2                      |
+| `machine_id`   | UUIDv4                                           | identity.cue                                                           |
+| `session_id`   | UUIDv4                                           | identity.cue                                                           |
+| `trace_id`     | 32 lowercase hex characters (W3C Trace Context)  | envelope.cue                                                           |
+| `tap_version`  | semver `MAJOR.MINOR.PATCH`                       | envelope.cue, [`VERSIONING.md`](VERSIONING.md)                         |
 
 When a new identifier is introduced, add it to `../protocol/schemas/identity.cue` and to this table.
 

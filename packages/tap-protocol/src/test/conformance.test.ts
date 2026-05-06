@@ -17,7 +17,13 @@
 
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { readFileSync, readdirSync, statSync, writeFileSync, existsSync } from "node:fs";
+import {
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+  existsSync,
+} from "node:fs";
 import { join, extname, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -74,8 +80,9 @@ function schemasDocPath(): string {
 }
 
 function suiteVersion(): string {
-  const candidate = process.env.TAP_CONFORMANCE_VERSION_FILE
-    ?? join(repoRoot(), "protocol", "conformance", "VERSION");
+  const candidate =
+    process.env.TAP_CONFORMANCE_VERSION_FILE ??
+    join(repoRoot(), "protocol", "conformance", "VERSION");
   try {
     return readFileSync(candidate, "utf8").trim();
   } catch {
@@ -114,14 +121,19 @@ function loadSchemaDoc(path: string): unknown | null {
   return JSON.parse(raw);
 }
 
-function extractDefinition(schemaDoc: unknown, defName: string): Record<string, unknown> | null {
+function extractDefinition(
+  schemaDoc: unknown,
+  defName: string,
+): Record<string, unknown> | null {
   if (typeof schemaDoc !== "object" || schemaDoc === null) return null;
   const doc = schemaDoc as Record<string, unknown>;
   const defs = doc["$defs"] as Record<string, unknown> | undefined;
   if (!defs) return null;
   const sub = defs[defName];
   if (typeof sub !== "object" || sub === null) return null;
-  const clone: Record<string, unknown> = { ...(sub as Record<string, unknown>) };
+  const clone: Record<string, unknown> = {
+    ...(sub as Record<string, unknown>),
+  };
   clone["$defs"] = defs;
   return clone;
 }
@@ -238,5 +250,8 @@ test("conformance suite", () => {
     0,
     `${report.fixtures_failed} fixture(s) failed; see JSON report above`,
   );
-  assert.ok(report.fixtures_total > 0, `expected at least one fixture under ${fixturesRoot()}`);
+  assert.ok(
+    report.fixtures_total > 0,
+    `expected at least one fixture under ${fixturesRoot()}`,
+  );
 });

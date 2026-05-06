@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 runbook_id: RB-NNN
 component: <daemon | relay | dashboard | ...>
@@ -10,7 +10,7 @@ severity: routine | elevated | incident
 
 # Runbook — Title
 
-> **How to use this template.** Copy `docs/runbooks/_template.md` to `docs/runbooks/<short-slug>.md`. Fill in front-matter (especially `runbook_id`, `component`, `severity`) and every required section. Runbooks are short, scannable, action-oriented; if you need to explain *why*, link to the relevant RFC or component doc.
+> **How to use this template.** Copy `docs/runbooks/_template.md` to `docs/runbooks/<short-slug>.md`. Fill in front-matter (especially `runbook_id`, `component`, `severity`) and every required section. Runbooks are short, scannable, action-oriented; if you need to explain _why_, link to the relevant RFC or component doc.
 
 This runbook covers the procedure for: **<one-sentence purpose>**.
 

@@ -7,7 +7,7 @@
 
 TAP is two products fused:
 
-1. **Cross-developer awareness and conflict prevention** — a real-time map of who is touching what across the team, with file-level, hunk-level, and semantic conflict detection delivered to agents *before* they write.
+1. **Cross-developer awareness and conflict prevention** — a real-time map of who is touching what across the team, with file-level, hunk-level, and semantic conflict detection delivered to agents _before_ they write.
 2. **Agent-to-agent consults** — a first-class primitive for one developer's agent to open a stateful, contextual conversation with another developer's agent, with full security, audit, and human-oversight guarantees.
 
 TAP is editor-agnostic (works with any agent that speaks MCP), conformant with Google A2A for identity and discovery, and aspires to be the IETF-track protocol for team-scoped agent collaboration.
@@ -20,7 +20,7 @@ The full project plan and locked architectural decisions live in [`project-conte
 
 ## Repository layout
 
-```
+```text
 protocol/        Wire-protocol spec, CUE schemas, conformance fixtures
 crates/          Rust components (tap-protocol, tap-daemon, tap-cli)
 pkg/             Go components (protocol bindings, relay tiers)

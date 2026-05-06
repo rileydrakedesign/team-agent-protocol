@@ -1,8 +1,8 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
-last-reviewed: 2026-04-29
+owners: ["@rileydrakedesign"]
+last-reviewed: 2026-05-04
 ---
 
 # TAP Documentation Plan
@@ -28,14 +28,14 @@ The goal is not to produce more documentation. The goal is to make the documenta
 
 Six layers, fully described in [`README.md`](README.md). In short:
 
-| Layer | Path | Cadence |
-|---|---|---|
-| Foundation | `docs/*.md` | Stable. Revised through RFCs. |
-| Phase | `docs/phases/phase-N/` | One bundle per phase. Frozen at phase exit. |
-| RFC | `docs/rfcs/NNNN-*.md` | One per design decision. Append-only after acceptance. |
-| Component | `docs/components/<component>/` | Lives with the code. Updated as code changes. |
-| Runbook | `docs/runbooks/*.md` | Updated per incident or release. |
-| Wire-format spec | `protocol/SPEC.md`, `protocol/schemas/`, `protocol/conformance/` | Versioned per [`VERSIONING.md`](VERSIONING.md). |
+| Layer            | Path                                                             | Cadence                                                |
+| ---------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Foundation       | `docs/*.md`                                                      | Stable. Revised through RFCs.                          |
+| Phase            | `docs/phases/phase-N/`                                           | One bundle per phase. Frozen at phase exit.            |
+| RFC              | `docs/rfcs/NNNN-*.md`                                            | One per design decision. Append-only after acceptance. |
+| Component        | `docs/components/<component>/`                                   | Lives with the code. Updated as code changes.          |
+| Runbook          | `docs/runbooks/*.md`                                             | Updated per incident or release.                       |
+| Wire-format spec | `protocol/SPEC.md`, `protocol/schemas/`, `protocol/conformance/` | Versioned per [`VERSIONING.md`](VERSIONING.md).        |
 
 ---
 
@@ -43,7 +43,7 @@ Six layers, fully described in [`README.md`](README.md). In short:
 
 Every phase produces this exact set of documents. Same names, same locations.
 
-```
+```text
 docs/phases/phase-N/
 ├── README.md              # phase scope, ship criteria, doc index for this phase
 ├── test-plan.md           # unit, integration, conformance, chaos, perf, security
@@ -55,7 +55,7 @@ docs/phases/phase-N/
 └── exit.md                # operationalized ship criterion
 ```
 
-A phase that does not need one of these documents (e.g., Phase 1 has no migration story) still includes the file with content "N/A — <reason>".
+A phase that does not need one of these documents (e.g., Phase 1 has no migration story) still includes the file with content `N/A — <reason>`.
 
 Templates: [`phases/_template/`](phases/_template/).
 
@@ -65,7 +65,7 @@ Templates: [`phases/_template/`](phases/_template/).
 
 Every major component produces this exact set:
 
-```
+```text
 docs/components/<component>/
 ├── ARCHITECTURE.md        # internal design
 ├── CONFIG.md              # configuration reference
@@ -86,15 +86,15 @@ Templates: [`components/_template/`](components/_template/).
 
 RFCs are numbered with a 4-digit zero-padded prefix. Numbers are allocated by phase:
 
-| Range | Phase |
-|---|---|
-| `0000` | Template (reserved) |
-| `0001`–`0009` | Phase 1 — Protocol & foundations |
-| `0010`–`0099` | Phase 2 — Daemon, local conflict, Claude Code adapter |
-| `0100`–`0199` | Phase 3 — Hosted relay, cross-developer awareness |
-| `0200`–`0299` | Phase 4 — Messaging, consults, tasks, trust |
-| `0300`–`0399` | Phase 5 — Semantic detection, multi-editor, dashboard v2 |
-| `0400`–`0499` | Phase 6 — Enterprise |
+| Range         | Phase                                                                 |
+| ------------- | --------------------------------------------------------------------- |
+| `0000`        | Template (reserved)                                                   |
+| `0001`–`0009` | Phase 1 — Protocol & foundations                                      |
+| `0010`–`0099` | Phase 2 — Daemon, local conflict, Claude Code adapter                 |
+| `0100`–`0199` | Phase 3 — Hosted relay, cross-developer awareness                     |
+| `0200`–`0299` | Phase 4 — Messaging, consults, tasks, trust                           |
+| `0300`–`0399` | Phase 5 — Semantic detection, multi-editor, dashboard v2              |
+| `0400`–`0499` | Phase 6 — Enterprise                                                  |
 | `0900`–`0999` | Continuing concerns (cross-phase: perf, security program, governance) |
 
 Numbers are reserved on RFC creation, never reused, never re-allocated to a different phase. If a phase exhausts its range, the next adjacent unused range is allocated and noted in [`RFC_PROCESS.md`](RFC_PROCESS.md).
@@ -113,10 +113,13 @@ The minimum required fields:
 ---
 status: draft | accepted | implemented | superseded | withdrawn
 phase: 1 | 2 | 3 | 4 | 5 | 6 | continuing
-owners: [@github-handle, ...]
+owners: ["@github-handle", ...]
 last-reviewed: YYYY-MM-DD
 ---
 ```
+
+> Quote each handle. YAML 1.2 §5.3 reserves `@` as a future-use indicator; strict
+> parsers (Go's go-yaml, used by vale) reject unquoted `[@handle]` flow sequences.
 
 CI rejects PRs that:
 

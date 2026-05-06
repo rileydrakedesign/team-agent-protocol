@@ -19,9 +19,7 @@
         "dirty_files": [
           {
             "file": "../../etc/passwd",
-            "hunks": [
-              { "start_line": 1, "end_line": 1, "op": "modify" }
-            ]
+            "hunks": [{ "start_line": 1, "end_line": 1, "op": "modify" }]
           }
         ]
       }

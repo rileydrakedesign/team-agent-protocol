@@ -10,11 +10,11 @@ Until TAP reaches a stable release, security fixes are issued only against `main
 
 **Do not open a public issue for security reports.**
 
-Email reports to **security@tap.dev** (forthcoming — until the address is provisioned, file a private security advisory via the GitHub Security tab on this repository).
+Email reports to **<security@tap.dev>** (forthcoming — until the address is provisioned, file a private security advisory via the GitHub Security tab on this repository).
 
 Encrypt sensitive reports with the project PGP key:
 
-```
+```text
 [ PGP key fingerprint to be published with first tagged release ]
 ```
 
@@ -44,7 +44,7 @@ In scope:
 
 Out of scope:
 
-- Vulnerabilities in third-party agents (Claude Code, Cursor, Codex, Aider). Report those to the upstream vendor; if the issue is exploitable specifically because of how an adapter integrates with TAP, that *is* in scope.
+- Vulnerabilities in third-party agents (Claude Code, Cursor, Codex, Aider). Report those to the upstream vendor; if the issue is exploitable specifically because of how an adapter integrates with TAP, that _is_ in scope.
 - Issues in self-hosted deployments where the operator has disabled documented security controls.
 - Denial-of-service from clients that have already authenticated and exceeded documented rate limits — these are policy concerns, not vulnerabilities.
 

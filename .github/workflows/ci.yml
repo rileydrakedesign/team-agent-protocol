@@ -109,6 +109,52 @@ jobs:
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 
+  doc-lints:
+    name: Doc lints
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: pip install pyyaml
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.18"
+
+      - name: Run markdownlint
+        run: npx --yes markdownlint-cli2@0.22.1
+
+      - name: Install vale
+        run: |
+          curl -sSL "https://github.com/errata-ai/vale/releases/download/v3.14.1/vale_3.14.1_Linux_64-bit.tar.gz" | tar xz vale
+          sudo mv vale /usr/local/bin/
+          vale --version
+
+      - name: Run vale
+        run: vale docs/ protocol/SPEC.md project-context.md README.md
+
+      - name: Run doclint
+        run: python tools/doclint/doclint.py
+
+      - name: Generate doc dashboard
+        run: python tools/doclint/doclint.py --dashboard > doc-dashboard.md
+
+      - name: Upload doc dashboard
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-dashboard
+          path: doc-dashboard.md
+          retention-days: 30
+
   conformance:
     name: Protocol conformance
     runs-on: ubuntu-latest

@@ -30,7 +30,8 @@ function parseSemver(v: string): Semver | null {
   const parts = core.split(".");
   if (parts.length !== 3) return null;
   const [maj, min, pat] = parts.map((p) => Number.parseInt(p, 10));
-  if ([maj, min, pat].some((n) => Number.isNaN(n) || n === undefined)) return null;
+  if ([maj, min, pat].some((n) => Number.isNaN(n) || n === undefined))
+    return null;
   return { major: maj!, minor: min!, patch: pat! };
 }
 

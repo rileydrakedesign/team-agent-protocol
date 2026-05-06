@@ -1,7 +1,7 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -197,34 +197,34 @@ Entries are alphabetical within each category.
 
 ## Acronyms
 
-| Acronym | Expansion |
-|---|---|
-| A2A | Google Agent2Agent (protocol) |
-| ADR | Architecture Decision Record |
-| API | Application Programming Interface |
-| BSL | Business Source License |
-| CA | Certificate Authority |
-| CI | Continuous Integration |
-| CUE | "Configure, Unify, Execute" — schema language |
-| DSL | Domain-Specific Language |
-| DSAR | Data Subject Access Request (GDPR) |
-| IA | Information Architecture |
-| IDP | Identity Provider |
-| JSON-RPC | Remote Procedure Call protocol over JSON |
-| JWT | JSON Web Token |
-| MCP | Model Context Protocol |
-| MSI | Microsoft Installer |
-| OAuth | Open Authorization |
-| OIDC | OpenID Connect |
-| PITR | Point-in-Time Recovery |
-| RFC | Request For Comments |
-| SAML | Security Assertion Markup Language |
-| SCIM | System for Cross-domain Identity Management |
-| SIEM | Security Information and Event Management |
-| SLO | Service-Level Objective |
-| SP | Service Provider (in SAML) |
-| SSO | Single Sign-On |
-| TAP | Team Agent Protocol |
-| TLS | Transport Layer Security |
-| TTL | Time To Live |
-| WSS | WebSocket Secure |
+| Acronym  | Expansion                                     |
+| -------- | --------------------------------------------- |
+| A2A      | Google Agent2Agent (protocol)                 |
+| ADR      | Architecture Decision Record                  |
+| API      | Application Programming Interface             |
+| BSL      | Business Source License                       |
+| CA       | Certificate Authority                         |
+| CI       | Continuous Integration                        |
+| CUE      | "Configure, Unify, Execute" — schema language |
+| DSL      | Domain-Specific Language                      |
+| DSAR     | Data Subject Access Request (GDPR)            |
+| IA       | Information Architecture                      |
+| IDP      | Identity Provider                             |
+| JSON-RPC | Remote Procedure Call protocol over JSON      |
+| JWT      | JSON Web Token                                |
+| MCP      | Model Context Protocol                        |
+| MSI      | Microsoft Installer                           |
+| OAuth    | Open Authorization                            |
+| OIDC     | OpenID Connect                                |
+| PITR     | Point-in-Time Recovery                        |
+| RFC      | Request For Comments                          |
+| SAML     | Security Assertion Markup Language            |
+| SCIM     | System for Cross-domain Identity Management   |
+| SIEM     | Security Information and Event Management     |
+| SLO      | Service-Level Objective                       |
+| SP       | Service Provider (in SAML)                    |
+| SSO      | Single Sign-On                                |
+| TAP      | Team Agent Protocol                           |
+| TLS      | Transport Layer Security                      |
+| TTL      | Time To Live                                  |
+| WSS      | WebSocket Secure                              |

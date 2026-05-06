@@ -6,6 +6,7 @@
 package schemas
 
 import "list"
+
 // Kind of a single state-diff change.
 //
 // - agent_attached: a new agent appeared in the subscription's scope.

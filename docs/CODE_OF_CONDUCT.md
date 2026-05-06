@@ -17,7 +17,7 @@ Behavior that is unwelcome includes personal attacks, sustained disruption, and 
 
 ## Reporting
 
-To report conduct concerns, email **conduct@tap.dev** (forthcoming — track in `project-context.md` §9.6 until provisioned). Reports are handled confidentially by the project's conduct committee, whose composition is documented in `GOVERNANCE.md`.
+To report conduct concerns, email **<conduct@tap.dev>** (forthcoming — track in `project-context.md` §9.6 until provisioned). Reports are handled confidentially by the project's conduct committee, whose composition is documented in `GOVERNANCE.md`.
 
 For security vulnerabilities, follow `SECURITY.md` instead.
 

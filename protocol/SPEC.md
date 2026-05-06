@@ -65,16 +65,16 @@ The relay MUST present a certificate validated against the daemon's pinned CA. D
 
 Every TAP message is a JSON object conforming to [`schemas/envelope.cue`](schemas/envelope.cue). The CUE definitions are normative; this section is summary.
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `jsonrpc` | string | yes | Always `"2.0"` |
-| `tap_version` | semver string | yes | Negotiated at handshake |
-| `trace_id` | 32-char lowercase hex | yes | W3C Trace Context-compatible |
-| `id` | string \| number \| null | requests/responses | Absent on notifications |
-| `method` | string | requests/notifications | TAP method name |
-| `params` | object | requests/notifications | Method-specific |
-| `result` | object | success responses | Method-specific |
-| `error` | object | error responses | See §13 |
+| Field         | Type                     | Required               | Notes                        |
+| ------------- | ------------------------ | ---------------------- | ---------------------------- |
+| `jsonrpc`     | string                   | yes                    | Always `"2.0"`               |
+| `tap_version` | semver string            | yes                    | Negotiated at handshake      |
+| `trace_id`    | 32-char lowercase hex    | yes                    | W3C Trace Context-compatible |
+| `id`          | string \| number \| null | requests/responses     | Absent on notifications      |
+| `method`      | string                   | requests/notifications | TAP method name              |
+| `params`      | object                   | requests/notifications | Method-specific              |
+| `result`      | object                   | success responses      | Method-specific              |
+| `error`       | object                   | error responses        | See §13                      |
 
 Implementations MUST reject messages that fail CUE schema validation. The reference conformance suite (§14) enumerates required negative test cases.
 
@@ -128,27 +128,27 @@ Sent by an agent (via daemon) on session start. Schema in [`schemas/agent_regist
 
 #### Request params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `machine_id` | string | yes | §4.3. |
-| `editor` | string | yes | `claude-code`, `cursor`, `codex`, `aider`, `generic-mcp`, or future-allocated. |
-| `session_id` | UUID | yes | RFC 4122 v4. |
-| `repo` | string | yes | Canonical repo URL per §4.4. |
-| `branch` | string | yes | Git branch name; restricted character set per schema. |
-| `worktree` | string | yes | Absolute path. |
-| `capabilities` | string[] | yes | Advisory; routed through to peers. |
+| Field          | Type     | Required | Notes                                                                          |
+| -------------- | -------- | -------- | ------------------------------------------------------------------------------ |
+| `developer_id` | string   | yes      | §4.1.                                                                          |
+| `agent_id`     | string   | yes      | §4.2.                                                                          |
+| `machine_id`   | string   | yes      | §4.3.                                                                          |
+| `editor`       | string   | yes      | `claude-code`, `cursor`, `codex`, `aider`, `generic-mcp`, or future-allocated. |
+| `session_id`   | UUID     | yes      | RFC 4122 v4.                                                                   |
+| `repo`         | string   | yes      | Canonical repo URL per §4.4.                                                   |
+| `branch`       | string   | yes      | Git branch name; restricted character set per schema.                          |
+| `worktree`     | string   | yes      | Absolute path.                                                                 |
+| `capabilities` | string[] | yes      | Advisory; routed through to peers.                                             |
 
 #### Response result
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `session_token` | string | yes | Opaque relay-issued handle, prefix `tap_sess_`. |
-| `awareness_scope.repo` | string | yes | Echo of the registered repo. |
-| `awareness_scope.branches` | string[] | no | Empty or absent means all branches. |
-| `awareness_scope.developers` | string[] | no | Empty or absent means all team members. |
-| `tap_version` | semver | yes | Negotiated; may be lower than requested per [`../docs/VERSIONING.md`](../docs/VERSIONING.md) §3. |
+| Field                        | Type     | Required | Notes                                                                                            |
+| ---------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `session_token`              | string   | yes      | Opaque relay-issued handle, prefix `tap_sess_`.                                                  |
+| `awareness_scope.repo`       | string   | yes      | Echo of the registered repo.                                                                     |
+| `awareness_scope.branches`   | string[] | no       | Empty or absent means all branches.                                                              |
+| `awareness_scope.developers` | string[] | no       | Empty or absent means all team members.                                                          |
+| `tap_version`                | semver   | yes      | Negotiated; may be lower than requested per [`../docs/VERSIONING.md`](../docs/VERSIONING.md) §3. |
 
 ### 6.2 `agent.heartbeat` (notification)
 
@@ -160,14 +160,14 @@ Periodic liveness signal. Schema in [`schemas/agent_heartbeat.cue`](schemas/agen
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `branch` | string | yes | Current branch; doubles as a branch-switch signal. |
-| `dirty_file_count` | int | yes | Non-negative; bounded ≤ 100,000. |
-| `intent` | string | no | Bounded length; ASCII control characters forbidden by schema. |
-| `sequence` | int | yes | Monotonically increasing. |
+| Field              | Type   | Required | Notes                                                         |
+| ------------------ | ------ | -------- | ------------------------------------------------------------- |
+| `developer_id`     | string | yes      | §4.1.                                                         |
+| `agent_id`         | string | yes      | §4.2.                                                         |
+| `branch`           | string | yes      | Current branch; doubles as a branch-switch signal.            |
+| `dirty_file_count` | int    | yes      | Non-negative; bounded ≤ 100,000.                              |
+| `intent`           | string | no       | Bounded length; ASCII control characters forbidden by schema. |
+| `sequence`         | int    | yes      | Monotonically increasing.                                     |
 
 ### 6.3 `agent.deregister` (notification)
 
@@ -178,11 +178,11 @@ Clean-shutdown notification. Schema in [`schemas/agent_deregister.cue`](schemas/
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `reason` | string | no | Lowercase snake_case, ≤ 32 chars. Advisory; relay does not interpret. |
+| Field          | Type   | Required | Notes                                                                 |
+| -------------- | ------ | -------- | --------------------------------------------------------------------- |
+| `developer_id` | string | yes      | §4.1.                                                                 |
+| `agent_id`     | string | yes      | §4.2.                                                                 |
+| `reason`       | string | no       | Lowercase snake_case, ≤ 32 chars. Advisory; relay does not interpret. |
 
 ### 6.4 `agent.disconnect` (server-initiated notification)
 
@@ -193,12 +193,12 @@ Server-initiated termination. Schema in [`schemas/agent_disconnect.cue`](schemas
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `reason` | enum | yes | Closed enum: `version_unsupported`, `policy_violation`, `idle_timeout`, `auth_revoked`, `server_shutdown`, `client_error`. |
-| `detail` | string | no | Printable ASCII, ≤ 256 chars. |
+| Field          | Type   | Required | Notes                                                                                                                      |
+| -------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `developer_id` | string | yes      | §4.1.                                                                                                                      |
+| `agent_id`     | string | yes      | §4.2.                                                                                                                      |
+| `reason`       | enum   | yes      | Closed enum: `version_unsupported`, `policy_violation`, `idle_timeout`, `auth_revoked`, `server_shutdown`, `client_error`. |
+| `detail`       | string | no       | Printable ASCII, ≤ 256 chars.                                                                                              |
 
 Adding a `reason` value is a MAJOR bump until v0.2 introduces a gracefully-ignore-unknown guarantee, per [`../docs/VERSIONING.md`](../docs/VERSIONING.md) §2.2.
 
@@ -220,11 +220,11 @@ An agent declares its current branch state. Schema in [`schemas/state_announce.c
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `repo` | string | yes | Canonical repo URL. |
-| `record` | object | yes | `#AgentAwarenessRecord`. |
-| `sequence` | int | yes | Monotonically increasing per (developer, agent). |
+| Field      | Type   | Required | Notes                                            |
+| ---------- | ------ | -------- | ------------------------------------------------ |
+| `repo`     | string | yes      | Canonical repo URL.                              |
+| `record`   | object | yes      | `#AgentAwarenessRecord`.                         |
+| `sequence` | int    | yes      | Monotonically increasing per (developer, agent). |
 
 `record.dirty_files` MAY be empty (clean worktree). `record.intent` is optional. Hunk ranges MUST satisfy `end_line >= start_line`; the schema rejects inverted ranges.
 
@@ -238,20 +238,20 @@ Request a one-shot awareness snapshot at a given scope. Schema in [`schemas/stat
 
 #### Request params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `scope.repo` | string | yes | Required. Absence fails closed. |
-| `scope.branches` | string[] | no | Empty/absent means all branches. |
-| `scope.developers` | string[] | no | Empty/absent means all team members. |
-| `since` | timestamp | no | RFC 3339 UTC. Returns only records updated at or after. |
+| Field              | Type      | Required | Notes                                                   |
+| ------------------ | --------- | -------- | ------------------------------------------------------- |
+| `scope.repo`       | string    | yes      | Required. Absence fails closed.                         |
+| `scope.branches`   | string[]  | no       | Empty/absent means all branches.                        |
+| `scope.developers` | string[]  | no       | Empty/absent means all team members.                    |
+| `since`            | timestamp | no       | RFC 3339 UTC. Returns only records updated at or after. |
 
 #### Response result
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `records` | object[] | yes | `#AgentAwarenessRecord[]`. May be empty. May contain duplicates within a single result; recipients MUST tolerate. |
-| `server_sequence` | int | yes | Server-current awareness sequence at snapshot time. |
-| `snapshot_at` | timestamp | yes | Server timestamp at which the snapshot was assembled. |
+| Field             | Type      | Required | Notes                                                                                                             |
+| ----------------- | --------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `records`         | object[]  | yes      | `#AgentAwarenessRecord[]`. May be empty. May contain duplicates within a single result; recipients MUST tolerate. |
+| `server_sequence` | int       | yes      | Server-current awareness sequence at snapshot time.                                                               |
+| `snapshot_at`     | timestamp | yes      | Server timestamp at which the snapshot was assembled.                                                             |
 
 ### 7.3 `state.subscribe` (request → response)
 
@@ -263,20 +263,20 @@ Open a long-lived subscription. Schema in [`schemas/state_subscribe.cue`](schema
 
 #### Request params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `scope.repo` | string | yes | Required. |
-| `scope.branches` | string[] | no | |
-| `scope.developers` | string[] | no | |
-| `since_sequence` | int | no | Resume from this sequence if known. |
+| Field              | Type     | Required | Notes                               |
+| ------------------ | -------- | -------- | ----------------------------------- |
+| `scope.repo`       | string   | yes      | Required.                           |
+| `scope.branches`   | string[] | no       |                                     |
+| `scope.developers` | string[] | no       |                                     |
+| `since_sequence`   | int      | no       | Resume from this sequence if known. |
 
 #### Response result
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `subscription_id` | string | yes | Opaque, prefix `tap_sub_`. |
-| `snapshot` | object[] | yes | `#AgentAwarenessRecord[]`. May be empty when resuming. |
-| `server_sequence` | int | yes | First subsequent `state.diff` carries `sequence == server_sequence + 1`. |
+| Field             | Type     | Required | Notes                                                                    |
+| ----------------- | -------- | -------- | ------------------------------------------------------------------------ |
+| `subscription_id` | string   | yes      | Opaque, prefix `tap_sub_`.                                               |
+| `snapshot`        | object[] | yes      | `#AgentAwarenessRecord[]`. May be empty when resuming.                   |
+| `server_sequence` | int      | yes      | First subsequent `state.diff` carries `sequence == server_sequence + 1`. |
 
 ### 7.4 `state.diff` (server-pushed notification)
 
@@ -288,20 +288,20 @@ Server-pushed delta for an active subscription. Schema in [`schemas/state_diff.c
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `subscription_id` | string | yes | Echoes the value from `state.subscribe`. |
-| `sequence` | int | yes | Monotonically increasing per subscription. |
-| `emitted_at` | timestamp | yes | Server timestamp of the change set. |
-| `changes` | object[] | yes | At least one change. |
+| Field             | Type      | Required | Notes                                      |
+| ----------------- | --------- | -------- | ------------------------------------------ |
+| `subscription_id` | string    | yes      | Echoes the value from `state.subscribe`.   |
+| `sequence`        | int       | yes      | Monotonically increasing per subscription. |
+| `emitted_at`      | timestamp | yes      | Server timestamp of the change set.        |
+| `changes`         | object[]  | yes      | At least one change.                       |
 
 #### Change kinds
 
-| `kind` | `record` required? | `reason` allowed? | Meaning |
-|---|---|---|---|
-| `agent_attached` | yes | no | A new agent appeared in the subscription's scope. |
-| `agent_detached` | no (MUST be absent) | yes (advisory) | An agent left the scope. |
-| `state_changed` | yes | no | An existing agent's record was updated. |
+| `kind`           | `record` required?  | `reason` allowed? | Meaning                                           |
+| ---------------- | ------------------- | ----------------- | ------------------------------------------------- |
+| `agent_attached` | yes                 | no                | A new agent appeared in the subscription's scope. |
+| `agent_detached` | no (MUST be absent) | yes (advisory)    | An agent left the scope.                          |
+| `state_changed`  | yes                 | no                | An existing agent's record was updated.           |
 
 ## 8. Conflict messages
 
@@ -321,24 +321,24 @@ Pre-write check. Returns the highest-confidence result available within the late
 
 #### Request params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `repo` | string | yes | Canonical repo URL. |
-| `branch` | string | yes | The branch the writes target. |
-| `intended_writes` | object[] | yes | At least one entry. Each carries `file` and optional `hunks`. |
+| Field             | Type     | Required | Notes                                                         |
+| ----------------- | -------- | -------- | ------------------------------------------------------------- |
+| `developer_id`    | string   | yes      | §4.1.                                                         |
+| `agent_id`        | string   | yes      | §4.2.                                                         |
+| `repo`            | string   | yes      | Canonical repo URL.                                           |
+| `branch`          | string   | yes      | The branch the writes target.                                 |
+| `intended_writes` | object[] | yes      | At least one entry. Each carries `file` and optional `hunks`. |
 
 When `hunks` is absent on an intended-write, the request is a Level 1 (file-existence) check for that file. When `hunks` is present, the request is for Level 2 (and Level 3 in Phase 5+).
 
 #### Response result
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `level_reached` | enum | yes | `1`, `2`, `3`, or `4`. Highest level that completed. |
-| `partial` | bool | yes | True if higher levels were requested but timed out. |
-| `conflicts` | object[] | yes | `#ConflictReport[]`. Empty list means no conflicts at the level reached. |
-| `checked_at` | timestamp | yes | Server timestamp at completion. |
+| Field           | Type      | Required | Notes                                                                    |
+| --------------- | --------- | -------- | ------------------------------------------------------------------------ |
+| `level_reached` | enum      | yes      | `1`, `2`, `3`, or `4`. Highest level that completed.                     |
+| `partial`       | bool      | yes      | True if higher levels were requested but timed out.                      |
+| `conflicts`     | object[]  | yes      | `#ConflictReport[]`. Empty list means no conflicts at the level reached. |
+| `checked_at`    | timestamp | yes      | Server timestamp at completion.                                          |
 
 Each `#ConflictReport` carries: `level`, `with` (peer ref: `developer_id` + `agent_id` + `branch`), `file`, optional `overlap_hunks` (Level 2+), optional `symbol` (Level 3+), `confidence ∈ [0.0, 1.0]`, optional `message` (printable ASCII, ≤ 256 chars).
 
@@ -352,22 +352,22 @@ Proactive declaration: "I'm about to edit X". Schema in [`schemas/conflict_decla
 
 #### Request params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `repo` | string | yes | |
-| `branch` | string | yes | |
-| `targets` | object[] | yes | At least one. Same shape as `intended_writes` in §8.1. |
-| `ttl_seconds` | int | yes | 1–3600. |
-| `reason` | string | no | Printable ASCII, ≤ 128 chars. Advisory. |
+| Field          | Type     | Required | Notes                                                  |
+| -------------- | -------- | -------- | ------------------------------------------------------ |
+| `developer_id` | string   | yes      | §4.1.                                                  |
+| `agent_id`     | string   | yes      | §4.2.                                                  |
+| `repo`         | string   | yes      |                                                        |
+| `branch`       | string   | yes      |                                                        |
+| `targets`      | object[] | yes      | At least one. Same shape as `intended_writes` in §8.1. |
+| `ttl_seconds`  | int      | yes      | 1–3600.                                                |
+| `reason`       | string   | no       | Printable ASCII, ≤ 128 chars. Advisory.                |
 
 #### Response result
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `declaration_id` | string | yes | Opaque, prefix `tap_decl_`. |
-| `expires_at` | timestamp | yes | Computed as `now() + ttl_seconds`. |
+| Field            | Type      | Required | Notes                              |
+| ---------------- | --------- | -------- | ---------------------------------- |
+| `declaration_id` | string    | yes      | Opaque, prefix `tap_decl_`.        |
+| `expires_at`     | timestamp | yes      | Computed as `now() + ttl_seconds`. |
 
 ### 8.3 `conflict.release` (notification)
 
@@ -378,11 +378,11 @@ Release a previously-declared conflict by id. Schema in [`schemas/conflict_relea
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `declaration_id` | string | yes | Echoes the value from `conflict.declare`. |
+| Field            | Type   | Required | Notes                                     |
+| ---------------- | ------ | -------- | ----------------------------------------- |
+| `developer_id`   | string | yes      | §4.1.                                     |
+| `agent_id`       | string | yes      | §4.2.                                     |
+| `declaration_id` | string | yes      | Echoes the value from `conflict.declare`. |
 
 ### 8.4 `conflict.notify` (server-pushed notification)
 
@@ -394,49 +394,49 @@ Server-pushed notification of a newly detected conflict affecting the recipient'
 
 #### Params
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `developer_id` | string | yes | §4.1. |
-| `agent_id` | string | yes | §4.2. |
-| `repo` | string | yes | |
-| `branch` | string | yes | |
-| `detected_at` | timestamp | yes | Server timestamp at detection. |
-| `conflicts` | object[] | yes | `#ConflictReport[]`. At least one. |
+| Field          | Type      | Required | Notes                              |
+| -------------- | --------- | -------- | ---------------------------------- |
+| `developer_id` | string    | yes      | §4.1.                              |
+| `agent_id`     | string    | yes      | §4.2.                              |
+| `repo`         | string    | yes      |                                    |
+| `branch`       | string    | yes      |                                    |
+| `detected_at`  | timestamp | yes      | Server timestamp at detection.     |
+| `conflicts`    | object[]  | yes      | `#ConflictReport[]`. At least one. |
 
 ## 9. Messaging
 
-*(Phase 4. Not specified in this draft.)*
+_(Phase 4. Not specified in this draft.)_
 
 ## 10. Consults
 
-*(Phase 4. Not specified in this draft.)*
+_(Phase 4. Not specified in this draft.)_
 
 ## 11. Tasks
 
-*(Phase 4. Not specified in this draft.)*
+_(Phase 4. Not specified in this draft.)_
 
 ## 12. Policy and trust
 
-*(Phase 4. Not specified in this draft.)*
+_(Phase 4. Not specified in this draft.)_
 
 ## 13. Errors
 
 JSON-RPC 2.0 error codes -32768 through -32000 are reserved for transport-level errors. TAP-specific application errors use codes in the range 1000–9999.
 
-| Code | Name | Meaning |
-|---|---|---|
-| -32700 | Parse error | Malformed JSON |
-| -32600 | Invalid request | Envelope failed schema validation |
-| -32601 | Method not found | Unknown method name |
-| -32602 | Invalid params | Params failed method-specific schema validation |
-| -32603 | Internal error | Server-side bug |
-| 1001 | Version unsupported | TAP version not supported by peer |
-| 1002 | Auth required | JWT missing or expired |
-| 1003 | Auth invalid | JWT failed verification |
-| 1010 | Rate limited | Per-developer or per-agent rate limit exceeded |
-| 1020 | Policy denied | Local or relay policy rejected the request |
-| 1030 | Repo not opted in | Caller is not a member of the repo's team |
-| 1040 | Scope exceeded | Requested scope above caller's trust level |
+| Code   | Name                | Meaning                                         |
+| ------ | ------------------- | ----------------------------------------------- |
+| -32700 | Parse error         | Malformed JSON                                  |
+| -32600 | Invalid request     | Envelope failed schema validation               |
+| -32601 | Method not found    | Unknown method name                             |
+| -32602 | Invalid params      | Params failed method-specific schema validation |
+| -32603 | Internal error      | Server-side bug                                 |
+| 1001   | Version unsupported | TAP version not supported by peer               |
+| 1002   | Auth required       | JWT missing or expired                          |
+| 1003   | Auth invalid        | JWT failed verification                         |
+| 1010   | Rate limited        | Per-developer or per-agent rate limit exceeded  |
+| 1020   | Policy denied       | Local or relay policy rejected the request      |
+| 1030   | Repo not opted in   | Caller is not a member of the repo's team       |
+| 1040   | Scope exceeded      | Requested scope above caller's trust level      |
 
 The full error code registry is maintained in this document and MUST be updated whenever a new code is introduced.
 
@@ -450,5 +450,5 @@ The conformance suite is part of this specification. Changes to the suite requir
 
 ## Appendix A — Change log
 
-- *2026-04-29:* §6 lifecycle expanded with full field tables, schemas, and fixtures for `agent.heartbeat`, `agent.deregister`, `agent.disconnect`. §7 awareness fully specified (`state.announce`, `state.query`, `state.subscribe`, `state.diff`) with `#AgentAwarenessRecord`, `#DirtyFile`, `#Hunk`, `#AwarenessScope`, `#SubscriptionId`. §8 conflict fully specified (`conflict.check`, `conflict.declare`, `conflict.release`, `conflict.notify`) with `#ConflictReport`, `#IntendedWrite`, `#PeerRef`, `#HunkOverlap`, `#ConflictLevel`, `#Confidence`. Shared types in `schemas/common.cue`. Conformance fixtures cover every new schema with at least one positive and one negative case. Versioning normative text moved to [`../docs/VERSIONING.md`](../docs/VERSIONING.md); §5 retains a summary.
-- *2026-04-28:* Draft skeleton established; lifecycle messages (`agent.register`, `agent.heartbeat`, `agent.deregister`, `agent.disconnect`) specified; envelope and identity schemas committed.
+- _2026-04-29:_ §6 lifecycle expanded with full field tables, schemas, and fixtures for `agent.heartbeat`, `agent.deregister`, `agent.disconnect`. §7 awareness fully specified (`state.announce`, `state.query`, `state.subscribe`, `state.diff`) with `#AgentAwarenessRecord`, `#DirtyFile`, `#Hunk`, `#AwarenessScope`, `#SubscriptionId`. §8 conflict fully specified (`conflict.check`, `conflict.declare`, `conflict.release`, `conflict.notify`) with `#ConflictReport`, `#IntendedWrite`, `#PeerRef`, `#HunkOverlap`, `#ConflictLevel`, `#Confidence`. Shared types in `schemas/common.cue`. Conformance fixtures cover every new schema with at least one positive and one negative case. Versioning normative text moved to [`../docs/VERSIONING.md`](../docs/VERSIONING.md); §5 retains a summary.
+- _2026-04-28:_ Draft skeleton established; lifecycle messages (`agent.register`, `agent.heartbeat`, `agent.deregister`, `agent.disconnect`) specified; envelope and identity schemas committed.

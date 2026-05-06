@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Flag ALL-CAPS tokens that look like RFC 2119 keywords but aren't. The legal
+# set is fixed by RFC 2119 / RFC 8174; using anything else in uppercase is a
+# style violation per docs/SPEC_STYLE.md §1.3.
+#
+# Canonical: MUST, MUST NOT, SHALL, SHALL NOT, SHOULD, SHOULD NOT, REQUIRED,
+# RECOMMENDED, NOT RECOMMENDED, MAY, OPTIONAL.
+#
+# This rule fires on common lookalikes: NEEDS, NEED TO, OUGHT, MIGHT, COULD,
+# WILL, WON'T (in normative position).
+
+extends: existence
+message: "'%s' is not an RFC 2119 keyword. Use MUST / SHOULD / MAY / etc. (docs/SPEC_STYLE.md §1.3) or rewrite in lowercase as informative prose."
+level: warning
+ignorecase: false
+nonword: false
+tokens:
+  - '\b(NEEDS TO|NEED TO|OUGHT TO|MIGHT|COULD|WILL NOT|WONT|HAS TO|HAVE TO)\b'

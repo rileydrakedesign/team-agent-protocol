@@ -1,7 +1,7 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -17,14 +17,14 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 
 ## At a glance
 
-| # | Phase | Headline outcome | Status |
-|---|---|---|---|
-| 1 | Protocol & foundations | A stable v0.1 spec an external implementer can build against. | In progress. |
-| 2 | Daemon, local conflict detection, Claude Code adapter | A single developer running multiple agents in worktrees has Level 1 + 2 conflicts caught before write. | Not started. |
-| 3 | Hosted relay, cross-developer awareness | Multi-developer teams share awareness state and detect cross-developer conflicts. | Not started. |
-| 4 | Messaging, consults, tasks, trust model | Agents on different developers' machines can consult each other, with full security model in force. *Headline feature.* | Not started. |
-| 5 | Semantic conflict detection, multi-editor, dashboard v2 | Detection deep enough to be unambiguously valuable; ecosystem broad enough to be a default choice. | Not started. |
-| 6 | Enterprise | Defensible enterprise product (SSO, on-prem, compliance). | Not started. |
+| #   | Phase                                                   | Headline outcome                                                                                                        | Status       |
+| --- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 1   | Protocol & foundations                                  | A stable v0.1 spec an external implementer can build against.                                                           | In progress. |
+| 2   | Daemon, local conflict detection, Claude Code adapter   | A single developer running multiple agents in worktrees has Level 1 + 2 conflicts caught before write.                  | Not started. |
+| 3   | Hosted relay, cross-developer awareness                 | Multi-developer teams share awareness state and detect cross-developer conflicts.                                       | Not started. |
+| 4   | Messaging, consults, tasks, trust model                 | Agents on different developers' machines can consult each other, with full security model in force. _Headline feature._ | Not started. |
+| 5   | Semantic conflict detection, multi-editor, dashboard v2 | Detection deep enough to be unambiguously valuable; ecosystem broad enough to be a default choice.                      | Not started. |
+| 6   | Enterprise                                              | Defensible enterprise product (SSO, on-prem, compliance).                                                               | Not started. |
 
 ---
 
@@ -33,6 +33,7 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 **Goal.** A stable protocol specification and the scaffolding to maintain it.
 
 **What ships.**
+
 - TAP v0.1 specification (formal, normative).
 - CUE schemas; generated bindings in Rust, Go, TypeScript.
 - Conformance test suite.
@@ -47,6 +48,7 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 **Goal.** A single developer running multiple agents in worktrees gets Level 1 and Level 2 conflicts caught before write, on their own machine, without a hosted relay.
 
 **What ships.**
+
 - Local daemon: git state engine, hunk diff tracker, awareness cache, MCP server, agent router, policy engine, outbound queue, telemetry.
 - Claude Code adapter: hook scripts, MCP server registration, tool surface.
 - Level 1 (file) and Level 2 (hunk) conflict detection (local-only).
@@ -62,6 +64,7 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 **Goal.** Multi-developer teams share awareness state in real time and detect cross-developer conflicts.
 
 **What ships.**
+
 - Relay: edge tier, core tier, storage layer (Postgres, Redis, NATS, S3), deployment automation, observability stack.
 - Identity: GitHub OAuth Device Flow, JWT issuance, repo membership resolution, mTLS daemon connection.
 - Awareness state synchronization.
@@ -77,6 +80,7 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 **Goal.** Agents on different developers' machines can ask each other questions, hand off tasks, and collaborate — with the full security model (scopes, trust graph, approval gates, policy, audit) in force.
 
 **What ships.**
+
 - Messaging primitives.
 - Consults: stateful, multi-turn, multi-party, with lifecycle, transcripts, summarization, observation.
 - Task primitives: handoff, accept/reject, update, complete.
@@ -95,6 +99,7 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 **Goal.** Detection deep enough to be unambiguously valuable. Ecosystem broad enough to be a default choice across editors.
 
 **What ships.**
+
 - Level 3 semantic conflict detection: tree-sitter symbol graph, cross-branch dependency analysis. Languages at launch: Rust, TypeScript, Go, Python, Java.
 - Level 4 resource detection: ports, migrations, environment variables.
 - Cursor adapter (MCP-based).
@@ -113,6 +118,7 @@ Current phase, current task, and most recent decisions are in [`../project-conte
 **Goal.** A defensible enterprise product.
 
 **What ships.**
+
 - SSO: SAML 2.0, OIDC, SCIM provisioning.
 - VPC and on-premises deployment: Helm charts, air-gapped install, license server.
 - Compliance: SOC 2 Type II, optional ISO 27001, GDPR endpoints, data-residency controls.

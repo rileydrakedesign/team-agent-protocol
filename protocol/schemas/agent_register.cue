@@ -36,8 +36,8 @@ package schemas
 	// Awareness subscription scope the relay accepted. May differ from
 	// what the daemon requested if policy narrows it.
 	awareness_scope: {
-		repo:        #RepoUrl
-		branches?:   [...#BranchName] // empty/absent means all branches
+		repo: #RepoUrl
+		branches?: [...#BranchName] // empty/absent means all branches
 		developers?: [...#DeveloperId] // empty/absent means all team members
 	}
 

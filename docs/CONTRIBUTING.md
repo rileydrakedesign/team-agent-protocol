@@ -6,7 +6,7 @@ Thank you for your interest in TAP. This document covers the development workflo
 
 - Read sections 1, 2, and 9 of [`project-context.md`](../project-context.md). Section 2 lists architectural decisions that are locked and not up for casual revisitation.
 - The protocol specification is the source of truth for wire format. Code generation flows from CUE schemas — do not hand-edit files under `**/generated/`.
-- Conformance tests gate every protocol change. Update fixtures in `protocol/conformance/` *before* the spec change lands.
+- Conformance tests gate every protocol change. Update fixtures in `protocol/conformance/` _before_ the spec change lands.
 
 ## Development setup
 
@@ -45,7 +45,7 @@ For local development outside Bazel (IDE integration, native cargo / go / pnpm w
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/) v1.0.0. The `commitlint` pre-commit hook enforces this.
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -93,7 +93,7 @@ Pre-commit runs all formatters; CI verifies they leave no diff.
 
 Every source file (Rust, Go, TS, CUE, Bazel, shell, Python) must carry an SPDX license header. The `addlicense` pre-commit hook enforces this.
 
-```
+```text
 # SPDX-License-Identifier: Apache-2.0   (most files)
 # SPDX-License-Identifier: BUSL-1.1     (relay-tier files only, Phase 3+)
 ```

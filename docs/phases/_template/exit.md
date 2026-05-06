@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 ---
 
@@ -17,9 +17,9 @@ This is a working document; check items off as they land.
 
 Restate verbatim from [`README.md`](README.md) §4. Operationalize each clause.
 
-| Clause | Operationalization | Evidence | Owner | Done |
-|---|---|---|---|---|
-| … | Concrete, testable rendering. | Link to test, scenario, attestation. | @handle | ☐ |
+| Clause | Operationalization            | Evidence                             | Owner   | Done |
+| ------ | ----------------------------- | ------------------------------------ | ------- | ---- |
+| …      | Concrete, testable rendering. | Link to test, scenario, attestation. | @handle | ☐    |
 
 ---
 
@@ -41,16 +41,16 @@ Every doc in the spine for this phase MUST be present and `accepted` (RFCs may b
 All RFCs allocated to this phase are `accepted` or `implemented`.
 
 | RFC | Status |
-|---|---|
-| … | … |
+| --- | ------ |
+| …   | …      |
 
 ## 4. Component docs
 
 Every component touched by this phase has a complete `docs/components/<component>/` bundle.
 
 | Component | Docs complete |
-|---|---|
-| … | ☐ |
+| --------- | ------------- |
+| …         | ☐             |
 
 ## 5. Wire-format spec
 
@@ -91,9 +91,9 @@ If the phase touches the wire format:
 
 ## 10. Sign-off
 
-| Role | Name | Date |
-|---|---|---|
-| Phase lead | @handle | YYYY-MM-DD |
-| Security reviewer | @handle | YYYY-MM-DD |
-| Spec maintainer | @handle | YYYY-MM-DD |
+| Role                | Name    | Date       |
+| ------------------- | ------- | ---------- |
+| Phase lead          | @handle | YYYY-MM-DD |
+| Security reviewer   | @handle | YYYY-MM-DD |
+| Spec maintainer     | @handle | YYYY-MM-DD |
 | Operator (Phase 3+) | @handle | YYYY-MM-DD |

@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: 1
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -25,6 +25,7 @@ Cross-phase open questions live in [`../../../project-context.md` §9.4](../../.
 **Why it matters.** Without a canonicalization rule, round-trip fixtures can pass in one runner and fail in another for trivially equivalent JSON.
 
 **Discussion.** Options:
+
 - JCS (RFC 8785, JSON Canonicalization Scheme) — formal, widely supported, slightly opinionated about numbers.
 - Sorted-keys + UTF-8 + no insignificant whitespace — simple, less formal.
 - Defer to each runner using a stable serializer (status quo) — works in practice; risky as runners diverge.
@@ -94,6 +95,7 @@ Lean toward JCS for its formal grounding, accepting the small import-cost in eac
 **Why it matters.** TAP's whole value proposition collapses if running it makes every agent session noticeably slower or more expensive. A "team coordination layer" that doubles the input-token bill per turn is dead on arrival.
 
 **Discussion.** Cost audit per surface:
+
 - Auto-injected `tap_state_query` at start of each turn (full team blob): ~135k tokens / session.
 - `PreToolUse` no-conflict reply (60 tokens × 50 writes): ~3,000 tokens / session.
 - Conflict-case reply (rare): ~1,200 tokens / session.
@@ -102,13 +104,14 @@ Lean toward JCS for its formal grounding, accepting the small import-cost in eac
 Three optimization principles drive the resolution: pull-not-push (don't auto-inject what can be queried), synthesize-not-serialize (daemon-rendered prose 5-10× cheaper than structured JSON), scope-tightly (filter to relevant slice before surfacing).
 
 **Resolution.** RFC 0015 amended with binding token-aware conventions:
+
 - §3.10 (new): nine binding rules — pull-not-push default, ≤ 30-token session-start banner, `format` parameter on every state tool with `summary` default, minimal `{ ok: true }` payload on no-conflict `tap_conflict_check`, digest mode by default for pending queues, narrow subscription scope at register time, compactable: true on informational results, recommended ≤ 5,000-token per-session budget, Phase 2 conformance test of ≤ 100 tokens/turn TAP-derived content in steady state.
 - §4.2/§4.3/§5.2/§5.4 propagate `format` parameter.
 - §4.4 minimal-payload no-conflict form.
 - §4.7 `tap_conflicts_pending` digest mode + `tap_conflicts_pending_expand` companion.
 - §6.1 lazy-bundle convention binding for Phase 4 consult/message tools: bundles travel by handle with daemon-synthesized summary, fetched lazily via `tap_consult_bundle_get` and `tap_consult_bundle_manifest`.
 
-After amendments, fixed overhead drops to ~2,000 tokens per session; variable cost scales with the agent's *actual cross-developer activity*, not with team size or activity level. A 30-turn session with no cross-developer activity uses ~250 tokens of TAP-derived content; a 30-turn session with one mid-session consult and three lazily fetched files uses ~5,000.
+After amendments, fixed overhead drops to ~2,000 tokens per session; variable cost scales with the agent's _actual cross-developer activity_, not with team size or activity level. A 30-turn session with no cross-developer activity uses ~250 tokens of TAP-derived content; a 30-turn session with one mid-session consult and three lazily fetched files uses ~5,000.
 
 ## Resolved
 

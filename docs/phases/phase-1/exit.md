@@ -1,25 +1,25 @@
 ---
 status: draft
 phase: 1
-owners: [@rileydrakedesign]
-last-reviewed: 2026-04-29
+owners: ["@rileydrakedesign"]
+last-reviewed: 2026-05-04
 ---
 
 # Phase 1 — Exit Checklist
 
 Operationalizes the ship criterion from [`README.md`](README.md) §4 and [`../../../project-context.md` §8](../../../project-context.md#8-phased-development-plan). Phase 1 is not complete until every box is checked.
 
-> *Restated ship criterion:* an external implementer can read the spec and produce a conformant client without consulting source code.
+> _Restated ship criterion:_ an external implementer can read the spec and produce a conformant client without consulting source code.
 
 ---
 
 ## 1. Ship-criterion operationalization
 
-| Clause | Operationalization | Evidence | Owner | Done |
-|---|---|---|---|---|
-| External implementer can read the spec without consulting source. | Hand a clean checkout of `protocol/SPEC.md`, `protocol/schemas/`, `protocol/conformance/`, and the foundation docs to a third-party engineer with no TAP context. They report whether they could understand the spec end-to-end. | Implementer report committed to `docs/phases/phase-1/external-implementer-report-<handle>.md`. | @rileydrakedesign | ☐ |
-| The implementer produces a conformant client. | The third-party implementation passes every fixture in `protocol/conformance/fixtures/`. | Conformance attestation per [`../../CONFORMANCE.md`](../../CONFORMANCE.md) §5, linked from the implementer report. | @rileydrakedesign | ☐ |
-| The implementer does so "without consulting source code." | The implementer attests in their report that they did not read TAP daemon, relay, or SDK source while implementing. | Statement in the implementer report. | @rileydrakedesign | ☐ |
+| Clause                                                            | Operationalization                                                                                                                                                                                                               | Evidence                                                                                                           | Owner             | Done |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------- | ---- |
+| External implementer can read the spec without consulting source. | Hand a clean checkout of `protocol/SPEC.md`, `protocol/schemas/`, `protocol/conformance/`, and the foundation docs to a third-party engineer with no TAP context. They report whether they could understand the spec end-to-end. | Implementer report committed to `docs/phases/phase-1/external-implementer-report-<handle>.md`.                     | @rileydrakedesign | ☐    |
+| The implementer produces a conformant client.                     | The third-party implementation passes every fixture in `protocol/conformance/fixtures/`.                                                                                                                                         | Conformance attestation per [`../../CONFORMANCE.md`](../../CONFORMANCE.md) §5, linked from the implementer report. | @rileydrakedesign | ☐    |
+| The implementer does so "without consulting source code."         | The implementer attests in their report that they did not read TAP daemon, relay, or SDK source while implementing.                                                                                                              | Statement in the implementer report.                                                                               | @rileydrakedesign | ☐    |
 
 ## 2. Doc-bundle completeness
 
@@ -83,7 +83,7 @@ Phase 2 RFCs authored out of order in Phase 1 (informational, not gating):
 ## 7. Operations
 
 - [ ] Branch protection on `main` configured (signed commits, two-reviewer for `protocol/` and `tools/codegen/`, required CI checks). Tracked in [`../../../project-context.md` §9.6](../../../project-context.md#96-deferred-items).
-- [ ] CI doc dashboard publishes (per [`../../DOCUMENTATION_PLAN.md`](../../DOCUMENTATION_PLAN.md) §10.4).
+- [x] CI doc dashboard publishes (per [`../../DOCUMENTATION_PLAN.md`](../../DOCUMENTATION_PLAN.md) §10.4) — `tools/doclint/doclint.py --dashboard` runs in the `doc-lints` CI job and uploads `doc-dashboard.md` as a build artifact.
 
 ## 8. Security
 
@@ -100,10 +100,10 @@ Phase 2 RFCs authored out of order in Phase 1 (informational, not gating):
 
 ## 10. Sign-off
 
-| Role | Name | Date |
-|---|---|---|
-| Phase lead | @rileydrakedesign | YYYY-MM-DD |
-| Spec maintainer | @rileydrakedesign | YYYY-MM-DD |
-| Security reviewer | TBD | YYYY-MM-DD |
+| Role              | Name              | Date       |
+| ----------------- | ----------------- | ---------- |
+| Phase lead        | @rileydrakedesign | YYYY-MM-DD |
+| Spec maintainer   | @rileydrakedesign | YYYY-MM-DD |
+| Security reviewer | TBD               | YYYY-MM-DD |
 
 (Operator and dashboard sign-off rows added in Phase 3.)

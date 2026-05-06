@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 ---
 
@@ -22,8 +22,8 @@ This document is consumed by:
 Per [`../../VERSIONING.md`](../../VERSIONING.md):
 
 | Change | Class (MAJOR / MINOR / PATCH) | Notes |
-|---|---|---|
-| … | … | … |
+| ------ | ----------------------------- | ----- |
+| …      | …                             | …     |
 
 If any change here is MAJOR, the deprecation window per [`../../VERSIONING.md`](../../VERSIONING.md) §4.2 MUST have been observed.
 
@@ -56,6 +56,7 @@ Fixtures added or removed. Effect on existing claims.
 For every config file touched by this phase: before, after, and migration command (if automatic).
 
 > Example:
+>
 > ```diff
 >  # ~/.tap/config.toml
 >  [relay]

@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 ---
 
@@ -30,8 +30,8 @@ Boundaries introduced by this phase. Each boundary identifies the components on 
 Adversaries newly relevant to this phase.
 
 | Adversary | Capability | Motivation |
-|---|---|---|
-| … | … | … |
+| --------- | ---------- | ---------- |
+| …         | …          | …          |
 
 ## 4. STRIDE delta
 
@@ -40,38 +40,38 @@ Threats introduced by this phase, by STRIDE category. Each row carries the threa
 ### 4.1 Spoofing
 
 | Threat | Control |
-|---|---|
-| … | … |
+| ------ | ------- |
+| …      | …       |
 
 ### 4.2 Tampering
 
 | Threat | Control |
-|---|---|
-| … | … |
+| ------ | ------- |
+| …      | …       |
 
 ### 4.3 Repudiation
 
 | Threat | Control |
-|---|---|
-| … | … |
+| ------ | ------- |
+| …      | …       |
 
 ### 4.4 Information disclosure
 
 | Threat | Control |
-|---|---|
-| … | … |
+| ------ | ------- |
+| …      | …       |
 
 ### 4.5 Denial of service
 
 | Threat | Control |
-|---|---|
-| … | … |
+| ------ | ------- |
+| …      | …       |
 
 ### 4.6 Elevation of privilege
 
 | Threat | Control |
-|---|---|
-| … | … |
+| ------ | ------- |
+| …      | …       |
 
 ## 5. Resolved threats
 

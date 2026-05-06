@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 component: <component-name>
 ---
@@ -16,12 +16,12 @@ How to install, run, monitor, upgrade, and recover this component. Aimed at the 
 
 Per platform, the recommended installation path. Link to [`CONFIG.md`](CONFIG.md) for what to set after install.
 
-| Platform | Path |
-|---|---|
-| macOS | `brew install ...` |
-| Linux | `apt install ...` / `dnf install ...` |
-| Windows | `scoop install ...` |
-| From source | `bazel build //…:...` |
+| Platform    | Path                                  |
+| ----------- | ------------------------------------- |
+| macOS       | `brew install ...`                    |
+| Linux       | `apt install ...` / `dnf install ...` |
+| Windows     | `scoop install ...`                   |
+| From source | `bazel build //…:...`                 |
 
 ## 2. Verify
 
@@ -40,8 +40,8 @@ How to start the component. Service-manager integration where applicable (launch
 Metrics and logs to watch. Reference dashboards (when they exist) and alert rules.
 
 | Signal | Source | Alert threshold |
-|---|---|---|
-| … | … | … |
+| ------ | ------ | --------------- |
+| …      | …      | …               |
 
 ## 5. Upgrade
 
@@ -62,8 +62,8 @@ Each task with a one-line description and a runbook reference.
 ## 8. Troubleshooting
 
 | Symptom | Likely cause | Action |
-|---|---|---|
-| … | … | … |
+| ------- | ------------ | ------ |
+| …       | …            | …      |
 
 ## 9. Capacity planning
 

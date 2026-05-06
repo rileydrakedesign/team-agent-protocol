@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: 1
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 

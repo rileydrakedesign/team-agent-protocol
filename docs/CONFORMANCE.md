@@ -1,7 +1,7 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 ---
 
@@ -32,14 +32,14 @@ Implementations MAY support newer or older protocol versions in addition to the 
 
 Different parts of TAP have different conformance surfaces. An implementation declares its class.
 
-| Class | Required behavior |
-|---|---|
-| **Daemon** | Full conformance: lifecycle, awareness, conflict, plus the relay-side methods it depends on. Sandboxing required. |
-| **Relay** | Full conformance: all methods at all phases the relay supports. Sandboxing required for messages it routes. |
-| **Adapter** | Daemon-side methods relevant to the editor (registration, awareness announce, conflict check, message receive). Sandboxing required at the boundary to the editor's LLM. |
-| **SDK / library** | Schema validation, envelope construction, version negotiation. No mandatory wire behavior, but its consumers MUST pass the corresponding daemon/relay/adapter class. |
+| Class             | Required behavior                                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Daemon**        | Full conformance: lifecycle, awareness, conflict, plus the relay-side methods it depends on. Sandboxing required.                                                        |
+| **Relay**         | Full conformance: all methods at all phases the relay supports. Sandboxing required for messages it routes.                                                              |
+| **Adapter**       | Daemon-side methods relevant to the editor (registration, awareness announce, conflict check, message receive). Sandboxing required at the boundary to the editor's LLM. |
+| **SDK / library** | Schema validation, envelope construction, version negotiation. No mandatory wire behavior, but its consumers MUST pass the corresponding daemon/relay/adapter class.     |
 
-A TAP-conformant *deployment* (the word used in `../protocol/SPEC.md` §1) consists of conformant daemons, relays, and adapters at compatible versions per [`VERSIONING.md`](VERSIONING.md) §3.3.
+A TAP-conformant _deployment_ (the word used in `../protocol/SPEC.md` §1) consists of conformant daemons, relays, and adapters at compatible versions per [`VERSIONING.md`](VERSIONING.md) §3.3.
 
 ---
 

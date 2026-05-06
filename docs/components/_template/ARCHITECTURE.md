@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 component: <component-name>
 ---
@@ -22,11 +22,11 @@ What does `<component>` do? One paragraph. Tie back to a project-level concern v
 
 What is in this component. What is not. What other components it depends on. What other components depend on it.
 
-| Side | Component | Transport | Contract |
-|---|---|---|---|
-| Above | … | … | [`INTERFACES.md`](INTERFACES.md) |
-| Below | … | … | … |
-| Peer | … | … | … |
+| Side  | Component | Transport | Contract                         |
+| ----- | --------- | --------- | -------------------------------- |
+| Above | …         | …         | [`INTERFACES.md`](INTERFACES.md) |
+| Below | …         | …         | …                                |
+| Peer  | …         | …         | …                                |
 
 ## 3. Internal structure
 
@@ -52,8 +52,8 @@ Startup, steady state, shutdown.
 Where the component holds state, durable or in-memory.
 
 | Store | Schema | Durability | Owner module |
-|---|---|---|---|
-| … | … | … | … |
+| ----- | ------ | ---------- | ------------ |
+| …     | …      | …          | …            |
 
 ## 6. Concurrency model
 
@@ -64,8 +64,8 @@ Threads, async runtimes, locks, queues. Where the component blocks. Where it par
 For each plausible failure: what fails, what the component does, what users observe.
 
 | Failure | Behavior | Recovery |
-|---|---|---|
-| … | … | … |
+| ------- | -------- | -------- |
+| …       | …        | …        |
 
 ## 8. Observability
 

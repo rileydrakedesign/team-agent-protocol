@@ -45,7 +45,7 @@ import "list"
 
 // Set of dirty hunks in a single file.
 #DirtyFile: {
-	file:  #FilePath
+	file: #FilePath
 	hunks: [...#Hunk] & list.MinItems(1)
 }
 
@@ -53,8 +53,8 @@ import "list"
 // At least `repo` is required. Empty/absent `branches` or `developers` means
 // "all" within the scope of the caller's repo membership.
 #AwarenessScope: {
-	repo:        #RepoUrl
-	branches?:   [...#BranchName]
+	repo: #RepoUrl
+	branches?: [...#BranchName]
 	developers?: [...#DeveloperId]
 }
 

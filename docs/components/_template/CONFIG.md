@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 component: <component-name>
 ---
@@ -27,8 +27,8 @@ Highest precedence first; later sources override earlier.
 ## 2. File locations
 
 | File | Purpose | Owner |
-|---|---|---|
-| … | … | … |
+| ---- | ------- | ----- |
+| …    | …       | …     |
 
 ## 3. Configuration reference
 
@@ -44,8 +44,8 @@ key = default_value      # type — short description
 ### 3.1 `[section]`
 
 | Key | Type | Default | Required | Description |
-|---|---|---|---|---|
-| … | … | … | … | … |
+| --- | ---- | ------- | -------- | ----------- |
+| …   | …    | …       | …        | …           |
 
 ### 3.2 `[other_section]`
 
@@ -53,15 +53,15 @@ key = default_value      # type — short description
 
 ## 4. Environment variables
 
-| Variable | Maps to | Notes |
-|---|---|---|
-| `TAP_…` | `[section].key` | … |
+| Variable | Maps to         | Notes |
+| -------- | --------------- | ----- |
+| `TAP_…`  | `[section].key` | …     |
 
 ## 5. Command-line flags
 
-| Flag | Maps to | Notes |
-|---|---|---|
-| `--…` | `[section].key` | … |
+| Flag  | Maps to         | Notes |
+| ----- | --------------- | ----- |
+| `--…` | `[section].key` | …     |
 
 ## 6. Validation
 
@@ -72,8 +72,8 @@ What happens when configuration fails to validate. Components MUST refuse to sta
 For each section: hot-reloadable, restart-required, or operator-coordinated.
 
 | Section | Reload class |
-|---|---|
-| … | … |
+| ------- | ------------ |
+| …       | …            |
 
 ## 8. Migrations
 

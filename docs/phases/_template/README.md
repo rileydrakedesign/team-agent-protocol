@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 ---
 
@@ -53,32 +53,32 @@ Restate the criterion from [`../../../project-context.md` §8](../../../project-
 
 ## 5. Doc index for this phase
 
-| Doc | Purpose |
-|---|---|
-| [`README.md`](README.md) | This file. |
-| [`test-plan.md`](test-plan.md) | Coverage and gating tests. |
-| [`perf-budget.md`](perf-budget.md) | Latency, memory, throughput targets. |
-| [`threat-model.md`](threat-model.md) | Phase-specific delta to [`../../THREAT_MODEL.md`](../../THREAT_MODEL.md). |
-| [`migration.md`](migration.md) | What changes from the previous phase. |
-| [`open-questions.md`](open-questions.md) | Unresolved questions for this phase. |
-| [`decisions.md`](decisions.md) | Append-only decision log for this phase. |
-| [`exit.md`](exit.md) | Ship-criterion checklist. |
+| Doc                                      | Purpose                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| [`README.md`](README.md)                 | This file.                                                                |
+| [`test-plan.md`](test-plan.md)           | Coverage and gating tests.                                                |
+| [`perf-budget.md`](perf-budget.md)       | Latency, memory, throughput targets.                                      |
+| [`threat-model.md`](threat-model.md)     | Phase-specific delta to [`../../THREAT_MODEL.md`](../../THREAT_MODEL.md). |
+| [`migration.md`](migration.md)           | What changes from the previous phase.                                     |
+| [`open-questions.md`](open-questions.md) | Unresolved questions for this phase.                                      |
+| [`decisions.md`](decisions.md)           | Append-only decision log for this phase.                                  |
+| [`exit.md`](exit.md)                     | Ship-criterion checklist.                                                 |
 
 ## 6. RFCs
 
 RFCs allocated to this phase per [`../../DOCUMENTATION_PLAN.md`](../../DOCUMENTATION_PLAN.md) §5. Update as RFCs land.
 
-| Number | Title | Status |
-|---|---|---|
-| `NNNN` | … | draft / accepted / implemented |
+| Number | Title | Status                         |
+| ------ | ----- | ------------------------------ |
+| `NNNN` | …     | draft / accepted / implemented |
 
 ## 7. Component docs
 
 Components introduced or modified in this phase. Each links to its `docs/components/<component>/` directory.
 
-| Component | Path | Status |
-|---|---|---|
-| … | `../../components/<component>/` | scaffolding / partial / complete |
+| Component | Path                            | Status                           |
+| --------- | ------------------------------- | -------------------------------- |
+| …         | `../../components/<component>/` | scaffolding / partial / complete |
 
 ## 8. Working notes
 

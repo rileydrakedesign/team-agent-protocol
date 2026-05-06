@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Flag ambiguous or non-canonical phrasings that sound normative but aren't
+# RFC 2119 / RFC 8174 keywords. Per docs/SPEC_STYLE.md §1.3.
+#
+# Canonical keywords (uppercase, used as keywords): MUST, MUST NOT, SHALL,
+# SHALL NOT, SHOULD, SHOULD NOT, REQUIRED, RECOMMENDED, NOT RECOMMENDED,
+# MAY, OPTIONAL. Anything else that looks like a normative claim is suspect.
+
+extends: substitution
+message: "Use canonical RFC 2119 keyword '%s' instead of '%s' (per docs/SPEC_STYLE.md §1.3)."
+level: warning
+ignorecase: false
+# Match the LHS as a whole word. Replace with RHS canonical form.
+swap:
+  # "MAY NOT" is explicitly ambiguous in RFC 2119; use MUST NOT or SHOULD NOT.
+  '\bMAY NOT\b': "MUST NOT (or SHOULD NOT)"
+  # "CAN" / "CANNOT" in normative-looking position; prefer MAY / MUST NOT.
+  '\bCANNOT\b': "MUST NOT"
+  # Common typo / informal variants of canonical forms.
+  '\bMUSTNT\b': "MUST NOT"
+  '\bSHOULDNT\b': "SHOULD NOT"
+  '\bSHANT\b': "SHALL NOT"

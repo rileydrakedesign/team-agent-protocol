@@ -57,17 +57,17 @@ Each fixture is a JSON object with the following shape:
 
 ### Fields
 
-| Field | Type | Required | Meaning |
-|---|---|---|---|
-| `$schema` | URL | yes | Pin to the conformance fixture schema version. |
-| `name` | string | yes | Human-readable. Used in test runner output. |
-| `description` | string | yes | One-sentence summary of what the fixture exercises. |
-| `schema_ref` | string | yes | `<schema_file>#<DefinitionName>` referencing a CUE schema. |
-| `data` | object \| string | yes | The message under test. JSON object for valid messages; raw string permitted for parse-error fixtures. |
-| `expected_valid` | boolean | yes | Whether `data` should validate against `schema_ref`. |
-| `expected_round_trip` | boolean | no, default `true` | Whether parse → serialize should produce byte-identical output. |
-| `expected_error_code` | integer | no | When `expected_valid` is `false`, the canonical error code (see SPEC §13). |
-| `notes` | string | no | Implementation guidance, references to spec sections. |
+| Field                 | Type             | Required           | Meaning                                                                                                |
+| --------------------- | ---------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `$schema`             | URL              | yes                | Pin to the conformance fixture schema version.                                                         |
+| `name`                | string           | yes                | Human-readable. Used in test runner output.                                                            |
+| `description`         | string           | yes                | One-sentence summary of what the fixture exercises.                                                    |
+| `schema_ref`          | string           | yes                | `<schema_file>#<DefinitionName>` referencing a CUE schema.                                             |
+| `data`                | object \| string | yes                | The message under test. JSON object for valid messages; raw string permitted for parse-error fixtures. |
+| `expected_valid`      | boolean          | yes                | Whether `data` should validate against `schema_ref`.                                                   |
+| `expected_round_trip` | boolean          | no, default `true` | Whether parse → serialize should produce byte-identical output.                                        |
+| `expected_error_code` | integer          | no                 | When `expected_valid` is `false`, the canonical error code (see SPEC §13).                             |
+| `notes`               | string           | no                 | Implementation guidance, references to spec sections.                                                  |
 
 ## Per-language test runner contract
 

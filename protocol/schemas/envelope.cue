@@ -19,9 +19,9 @@ package schemas
 // All TAP messages share these fields. Concrete request/response/notification
 // shapes refine #Envelope further.
 #Envelope: {
-	jsonrpc: "2.0"
+	jsonrpc:     "2.0"
 	tap_version: #SemVer
-	trace_id: #TraceID
+	trace_id:    #TraceID
 	...
 }
 
@@ -46,7 +46,7 @@ package schemas
 
 // Response: server→client successful response to a request.
 #Response: #Envelope & {
-	id:     #JSONRPCId
+	id: #JSONRPCId
 	result: [string]: _
 }
 

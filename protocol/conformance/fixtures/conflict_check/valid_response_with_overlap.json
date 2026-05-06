@@ -23,7 +23,7 @@
           },
           "overlap_hunks": [
             {
-              "mine":   { "start_line": 12, "end_line": 48, "op": "modify" },
+              "mine": { "start_line": 12, "end_line": 48, "op": "modify" },
               "theirs": { "start_line": 30, "end_line": 60, "op": "modify" }
             }
           ],

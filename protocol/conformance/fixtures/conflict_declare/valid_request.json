@@ -17,9 +17,7 @@
       "targets": [
         {
           "file": "src/auth/oauth.rs",
-          "hunks": [
-            { "start_line": 12, "end_line": 48, "op": "modify" }
-          ]
+          "hunks": [{ "start_line": 12, "end_line": 48, "op": "modify" }]
         },
         { "file": "src/auth/mod.rs" }
       ],

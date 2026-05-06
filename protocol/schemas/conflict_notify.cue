@@ -7,6 +7,7 @@
 package schemas
 
 import "list"
+
 #ConflictNotifyParams: {
 	// The agent the notification targets.
 	developer_id: #DeveloperId

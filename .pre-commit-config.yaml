@@ -43,6 +43,13 @@ repos:
       - id: go-vet
       - id: go-mod-tidy
 
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.22.1
+    hooks:
+      - id: markdownlint-cli2
+        # Globs and ignores live in .markdownlint-cli2.yaml; pre-commit's file
+        # arg list is overridden by the config's globs to match CI behavior.
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:
@@ -51,6 +58,7 @@ repos:
         exclude: |
           (?x)^(
             .*/generated/.*|
+            .*/_generated/.*|
             .*\.tsbuildinfo|
             CHANGELOG\.md
           )$

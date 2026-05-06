@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: 1
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-05-04
 ---
 
@@ -65,41 +65,41 @@ Operationalized in [`exit.md`](exit.md). Concretely: a third-party engineer, giv
 
 ## 5. Doc index for this phase
 
-| Doc | Purpose |
-|---|---|
-| [`README.md`](README.md) | This file. |
-| [`test-plan.md`](test-plan.md) | Coverage and gating tests for Phase 1. |
-| [`perf-budget.md`](perf-budget.md) | Phase 1 performance budgets. |
-| [`threat-model.md`](threat-model.md) | Phase 1 threat-model addendum. |
-| [`migration.md`](migration.md) | Migration / compatibility (N/A — first phase). |
-| [`open-questions.md`](open-questions.md) | Phase 1 open questions. |
-| [`decisions.md`](decisions.md) | Phase 1 decision log. |
-| [`exit.md`](exit.md) | Phase 1 exit checklist. |
+| Doc                                      | Purpose                                        |
+| ---------------------------------------- | ---------------------------------------------- |
+| [`README.md`](README.md)                 | This file.                                     |
+| [`test-plan.md`](test-plan.md)           | Coverage and gating tests for Phase 1.         |
+| [`perf-budget.md`](perf-budget.md)       | Phase 1 performance budgets.                   |
+| [`threat-model.md`](threat-model.md)     | Phase 1 threat-model addendum.                 |
+| [`migration.md`](migration.md)           | Migration / compatibility (N/A — first phase). |
+| [`open-questions.md`](open-questions.md) | Phase 1 open questions.                        |
+| [`decisions.md`](decisions.md)           | Phase 1 decision log.                          |
+| [`exit.md`](exit.md)                     | Phase 1 exit checklist.                        |
 
 ## 6. RFCs
 
 Phase 1 RFC range: `0001`–`0009`.
 
-| Number | Title | Status |
-|---|---|---|
-| `0001` | Codegen pipeline | Draft (deferred — current `tools/codegen/generate.sh` plus `drift_check.sh` are functional; RFC formalizes and documents). |
-| `0002` | Conformance runner contract | Draft (deferred — see [`../../CONFORMANCE.md`](../../CONFORMANCE.md) §4 for the binding contract). |
+| Number | Title                       | Status                                                                                                                     |
+| ------ | --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `0001` | Codegen pipeline            | Draft (deferred — current `tools/codegen/generate.sh` plus `drift_check.sh` are functional; RFC formalizes and documents). |
+| `0002` | Conformance runner contract | Draft (deferred — see [`../../CONFORMANCE.md`](../../CONFORMANCE.md) §4 for the binding contract).                         |
 
 Out-of-order RFCs authored in Phase 1 for Phase 2's critical path:
 
-| Number | Title | Status |
-|---|---|---|
+| Number | Title            | Status              |
+| ------ | ---------------- | ------------------- |
 | `0015` | MCP tool surface | Draft (in progress) |
 
 ## 7. Component docs
 
 Phase 1 introduces the three reference SDK packages but no operational components. Component docs for Phase 2's daemon are authored in Phase 2.
 
-| Component | Path | Status |
-|---|---|---|
-| `tap-protocol` (Rust) | [`../../../crates/tap-protocol/`](../../../crates/tap-protocol/) | hand-written helpers + conformance runner green (46/46); generated types stubbed pending cargo-typify fix |
-| `tap-protocol` (Go) | [`../../../pkg/protocol/`](../../../pkg/protocol/) | hand-written helpers + generated `types.go` (518 lines) + conformance runner green (46/46) |
-| `tap-protocol` (TypeScript) | [`../../../packages/tap-protocol/`](../../../packages/tap-protocol/) | hand-written helpers + generated `all.ts` + conformance runner green (46/46) |
+| Component                   | Path                                                                 | Status                                                                                                    |
+| --------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `tap-protocol` (Rust)       | [`../../../crates/tap-protocol/`](../../../crates/tap-protocol/)     | hand-written helpers + conformance runner green (46/46); generated types stubbed pending cargo-typify fix |
+| `tap-protocol` (Go)         | [`../../../pkg/protocol/`](../../../pkg/protocol/)                   | hand-written helpers + generated `types.go` (518 lines) + conformance runner green (46/46)                |
+| `tap-protocol` (TypeScript) | [`../../../packages/tap-protocol/`](../../../packages/tap-protocol/) | hand-written helpers + generated `all.ts` + conformance runner green (46/46)                              |
 
 Each ships generated bindings + hand-written envelope helpers + a conformance test runner. SDK component docs (`docs/components/sdk/...`) are deferred until Phase 2 produces a stable API surface.
 

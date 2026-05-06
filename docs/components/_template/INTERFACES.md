@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 component: <component-name>
 ---
@@ -20,17 +20,17 @@ Surfaces this component publishes for others to consume.
 
 ### 1.1 Wire-protocol surface (if applicable)
 
-| Method | Direction | Schema | Notes |
-|---|---|---|---|
-| … | inbound / outbound | `protocol/schemas/...` | … |
+| Method | Direction          | Schema                 | Notes |
+| ------ | ------------------ | ---------------------- | ----- |
+| …      | inbound / outbound | `protocol/schemas/...` | …     |
 
 ### 1.2 Local IPC surface (if applicable)
 
 For example, the daemon's Unix socket, the relay's admin API, the dashboard's HTTP API.
 
 | Endpoint | Transport | Auth | Schema | Notes |
-|---|---|---|---|---|
-| … | … | … | … | … |
+| -------- | --------- | ---- | ------ | ----- |
+| …        | …         | …    | …      | …     |
 
 ### 1.3 CLI surface (if applicable)
 
@@ -41,24 +41,24 @@ Cross-link to `docs/components/cli/REFERENCE.md` (when it exists). Do not duplic
 Other components or external systems this component depends on.
 
 | Dependency | Surface | Failure behavior |
-|---|---|---|
-| … | … | … |
+| ---------- | ------- | ---------------- |
+| …          | …       | …                |
 
 ## 3. Data interfaces
 
 Persistent stores read or written. For each: the schema, the access pattern, the consistency requirement.
 
 | Store | Schema | Read / Write / Both | Consistency |
-|---|---|---|---|
-| … | … | … | … |
+| ----- | ------ | ------------------- | ----------- |
+| …     | …      | …                   | …           |
 
 ## 4. Event interfaces
 
 Events produced or consumed (NATS subjects, webhooks, etc.).
 
-| Channel | Direction | Payload schema |
-|---|---|---|
-| … | produce / consume | … |
+| Channel | Direction         | Payload schema |
+| ------- | ----------------- | -------------- |
+| …       | produce / consume | …              |
 
 ## 5. Configuration interfaces
 
@@ -76,9 +76,9 @@ How each interface is versioned. Wire protocol per [`../../VERSIONING.md`](../..
 
 Which interfaces are stable, which are unstable, which are private.
 
-| Interface | Stability |
-|---|---|
-| … | stable / unstable / private |
+| Interface | Stability                   |
+| --------- | --------------------------- |
+| …         | stable / unstable / private |
 
 ## 9. Examples
 

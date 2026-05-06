@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Per docs/SPEC_STYLE.md §10: spec prose is terse, declarative, present tense.
+# No first or second person. This rule fires on first/second-person pronouns
+# in spec prose to nudge authors toward declarative voice.
+#
+# Scope: applies to all .md by default (BasedOnStyles = TAP). Foundation docs
+# and RFCs use a relaxed dialect; the rule is `suggestion` so it doesn't block.
+
+extends: existence
+message: "Avoid first/second-person voice in normative prose. Rewrite '%s' as a declarative statement (docs/SPEC_STYLE.md §10)."
+level: suggestion
+ignorecase: true
+tokens:
+  - '\bwe\b'
+  - '\bour\b'
+  - '\byou\b'
+  - "\\byou're\\b"
+  - "\\byou'll\\b"
+  - '\byour\b'
+  - '\bus\b'

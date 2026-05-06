@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Project-specific vocabulary accepted by vale's spelling check. Add a term
+# here when it triggers a false positive in a spelling rule. The TAP style
+# does not yet enable spelling, so this is forward-looking infrastructure.
+
+# TAP terms.
+TAP
+A2A
+
+# Wire-format / protocol acronyms.
+JSON-RPC
+WSS
+mTLS
+MCP
+JWT
+SSO
+OIDC
+SAML
+SCIM
+JCS
+
+# Storage / runtime.
+NATS
+ClickHouse
+Postgres
+Redis
+
+# Build / tooling.
+Bzlmod
+Bazel
+bazelisk
+typify
+typify-cli
+gengotypes
+markdownlint
+buildifier
+dependabot
+santhosh-tekuri
+jsonschema
+pnpm
+
+# Editors and agents we integrate with.
+Aider
+Codex
+Cursor
+
+# Domain terms used in spec prose.
+worktree
+worktrees
+codegen
+hunk
+hunks
+multi-tier
+multi-tenant
+multi-developer
+cross-developer
+agent-to-agent
+read-through
+write-behind
+heartbeat
+heartbeats
+sandboxing
+canonicalization
+allowlist
+denylist
+serializer
+
+# Identity / crypto.
+Ed25519
+SHA-256
+ECDSA
+PGP
+
+# Platforms.
+macOS
+Homebrew
+Scoop
+musl

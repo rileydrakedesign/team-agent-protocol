@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: 2
-owners: [@rileydrakedesign]
+owners: ["@rileydrakedesign"]
 last-reviewed: 2026-04-29
 rfc_number: 0015
 title: "MCP tool surface"
@@ -23,7 +23,7 @@ The tool surface is small (twelve tools, organized in five categories) and inten
 
 Each tool is specified with:
 
-- a stable name (snake_case, `tap_*` prefix),
+- a stable name (snake*case, `tap*\*` prefix),
 - a JSON Schema for inputs (derived from `protocol/schemas/`),
 - a JSON Schema for outputs,
 - a side-effect classification (read-only, advisory, state-mutating),
@@ -78,7 +78,7 @@ Three properties anchor the design:
 
 ### 3.1 Architecture
 
-```
+```text
 ┌──────────────────────┐        ┌──────────────────────┐
 │   Editor (e.g.       │        │   Local daemon       │
 │   Claude Code)       │        │                      │
@@ -141,11 +141,11 @@ Two notes:
 
 Every tool declares a side-effect class. Adapters use this to decide how aggressively to gate execution behind hook flows.
 
-| Class | Meaning | Hook posture |
-|---|---|---|
-| `read_only` | No state mutation; safe to call freely. | No `PreToolUse` gate required. |
-| `advisory` | Records caller intent; relay state changes; reversible. | `PreToolUse` MAY gate; recommended quiet. |
-| `state_mutating` | Allocates a server-side handle (declaration, subscription) or sends a message that influences peer behavior. | `PreToolUse` SHOULD gate; auditable. |
+| Class            | Meaning                                                                                                      | Hook posture                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `read_only`      | No state mutation; safe to call freely.                                                                      | No `PreToolUse` gate required.            |
+| `advisory`       | Records caller intent; relay state changes; reversible.                                                      | `PreToolUse` MAY gate; recommended quiet. |
+| `state_mutating` | Allocates a server-side handle (declaration, subscription) or sends a message that influences peer behavior. | `PreToolUse` SHOULD gate; auditable.      |
 
 The classification is independent of the wire-protocol method's idempotency. `tap_conflict_check` is a wire-level request/response but its tool class is `read_only` because it does not mutate awareness state.
 
@@ -162,13 +162,13 @@ This rule is the operationalization of [`../THREAT_MODEL.md`](../THREAT_MODEL.md
 
 Tools return errors via MCP's tool-result error mechanism. Error payloads carry a `code` matching the TAP wire-protocol error registry (`protocol/SPEC.md` §13) and a `message`. Common cases:
 
-| Code | When |
-|---|---|
-| `-32602` | Invalid params (malformed input). |
-| `1010` | Rate limited. |
-| `1020` | Policy denied (e.g., scope above caller's trust level). |
-| `1030` | Repo not opted in. |
-| `2001` | Daemon not connected to relay (Phase 3+); `tap_state_query` returns local-cache-only data with a `partial: true` flag instead, when applicable. |
+| Code     | When                                                                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-32602` | Invalid params (malformed input).                                                                                                               |
+| `1010`   | Rate limited.                                                                                                                                   |
+| `1020`   | Policy denied (e.g., scope above caller's trust level).                                                                                         |
+| `1030`   | Repo not opted in.                                                                                                                              |
+| `2001`   | Daemon not connected to relay (Phase 3+); `tap_state_query` returns local-cache-only data with a `partial: true` flag instead, when applicable. |
 
 A new error code is added by RFC, allocated from the registry per [`../SPEC_STYLE.md`](../SPEC_STYLE.md) §5.
 
@@ -186,13 +186,13 @@ Every TAP tool result the agent reads costs context tokens. Naïve adapter conve
 
 - The adapter MUST NOT auto-call `tap_state_query`, `tap_peers_list`, or `tap_recent_activity` at any hook unless the developer has explicitly opted in through adapter configuration.
 - The adapter MUST call `tap_conflict_check` in `PreToolUse` for every write tool the agent invokes. This is the hot path; cost is bounded (≤ 60 tokens per no-conflict reply per §4.4) and value is high.
-- The adapter SHOULD call `tap_conflicts_pending` and `tap_consult_pending` between turns *only* when the session-start banner (§3.10.2) reports pending items, or in response to a server-pushed signal (Phase 5+; pull-only in v1.0).
+- The adapter SHOULD call `tap_conflicts_pending` and `tap_consult_pending` between turns _only_ when the session-start banner (§3.10.2) reports pending items, or in response to a server-pushed signal (Phase 5+; pull-only in v1.0).
 
 #### 3.10.2 Session-start banner
 
 At `SessionStart`, the adapter MAY inject a single one-line banner of TAP state. The banner is a daemon-synthesized natural-language summary obtained via `tap_session_info` plus a count of pending events. Bounded to ≤ 30 tokens. Example:
 
-```
+```text
 TAP: 4 peers online in this repo, 0 conflicts on your branch, 0 pending.
 ```
 
@@ -247,11 +247,11 @@ Tools the agent calls during normal coding flow. Read-only and advisory tools do
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `branch` | string | yes | Current branch. |
-| `dirty_files` | object[] | yes | May be empty. Each entry: `{file, hunks[]}` per `protocol/schemas/common.cue#DirtyFile`. |
-| `intent` | string | no | Free-text, ≤ 256 chars, no control characters. |
+| Field         | Type     | Required | Notes                                                                                    |
+| ------------- | -------- | -------- | ---------------------------------------------------------------------------------------- |
+| `branch`      | string   | yes      | Current branch.                                                                          |
+| `dirty_files` | object[] | yes      | May be empty. Each entry: `{file, hunks[]}` per `protocol/schemas/common.cue#DirtyFile`. |
+| `intent`      | string   | no       | Free-text, ≤ 256 chars, no control characters.                                           |
 
 The daemon fills in `developer_id`, `agent_id`, `repo`, `worktree`, and `sequence` from the session.
 
@@ -288,12 +288,12 @@ Not applicable — no peer content.
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `format` | string | no | `"summary"` (default) or `"structured"`. See §3.10.3. |
-| `branches` | string[] | no | Empty/absent → all branches in the agent's repo. |
-| `developers` | string[] | no | Empty/absent → all team members. |
-| `since` | timestamp | no | RFC 3339 UTC. Returns only records updated at or after. |
+| Field        | Type      | Required | Notes                                                   |
+| ------------ | --------- | -------- | ------------------------------------------------------- |
+| `format`     | string    | no       | `"summary"` (default) or `"structured"`. See §3.10.3.   |
+| `branches`   | string[]  | no       | Empty/absent → all branches in the agent's repo.        |
+| `developers` | string[]  | no       | Empty/absent → all team members.                        |
+| `since`      | timestamp | no       | RFC 3339 UTC. Returns only records updated at or after. |
 
 The daemon fills in `repo` from the session.
 
@@ -303,11 +303,11 @@ When `format == "summary"` (default): a `summary: string` field with daemon-synt
 
 When `format == "structured"`:
 
-| Field | Type | Notes |
-|---|---|---|
-| `records` | object[] | `#AgentAwarenessRecord[]`. May be empty. |
-| `partial` | bool | True if the daemon could only consult its local cache (e.g., relay disconnected). |
-| `snapshot_at` | timestamp | Server timestamp at snapshot. |
+| Field         | Type      | Notes                                                                             |
+| ------------- | --------- | --------------------------------------------------------------------------------- |
+| `records`     | object[]  | `#AgentAwarenessRecord[]`. May be empty.                                          |
+| `partial`     | bool      | True if the daemon could only consult its local cache (e.g., relay disconnected). |
+| `snapshot_at` | timestamp | Server timestamp at snapshot.                                                     |
 
 #### Sandboxing
 
@@ -321,10 +321,10 @@ When `format == "structured"`:
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `file` | string | yes | Path within the worktree, per `#FilePath`. |
-| `format` | string | no | `"summary"` (default) or `"structured"`. |
+| Field    | Type   | Required | Notes                                      |
+| -------- | ------ | -------- | ------------------------------------------ |
+| `file`   | string | yes      | Path within the worktree, per `#FilePath`. |
+| `format` | string | no       | `"summary"` (default) or `"structured"`.   |
 
 #### Output
 
@@ -332,10 +332,10 @@ When `format == "summary"`: a `summary: string` plus `peer_count: int`. Bounded 
 
 When `format == "structured"`:
 
-| Field | Type | Notes |
-|---|---|---|
-| `peers` | object[] | One entry per `(developer_id, agent_id, branch)` touching the file. Each carries the peer's `intent` (sandboxed) and the count of overlapping hunks if computable. |
-| `partial` | bool | True if local-cache only. |
+| Field     | Type     | Notes                                                                                                                                                              |
+| --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `peers`   | object[] | One entry per `(developer_id, agent_id, branch)` touching the file. Each carries the peer's `intent` (sandboxed) and the count of overlapping hunks if computable. |
+| `partial` | bool     | True if local-cache only.                                                                                                                                          |
 
 #### Sandboxing
 
@@ -349,9 +349,9 @@ When `format == "structured"`:
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `intended_writes` | object[] | yes | At least one `{file, hunks?}`. |
+| Field             | Type     | Required | Notes                          |
+| ----------------- | -------- | -------- | ------------------------------ |
+| `intended_writes` | object[] | yes      | At least one `{file, hunks?}`. |
 
 #### Output
 
@@ -365,13 +365,13 @@ Four tokens. The agent reads this as "proceed" and moves on. No structured paylo
 
 **Conflict case:**
 
-| Field | Type | Notes |
-|---|---|---|
-| `ok` | bool | Always `false` in this case. |
-| `level_reached` | int | 1, 2, 3, or 4. |
-| `partial` | bool | True if higher levels timed out. |
-| `conflicts` | object[] | `#ConflictReport[]`. At least one. |
-| `checked_at` | timestamp | |
+| Field           | Type      | Notes                              |
+| --------------- | --------- | ---------------------------------- |
+| `ok`            | bool      | Always `false` in this case.       |
+| `level_reached` | int       | 1, 2, 3, or 4.                     |
+| `partial`       | bool      | True if higher levels timed out.   |
+| `conflicts`     | object[]  | `#ConflictReport[]`. At least one. |
+| `checked_at`    | timestamp |                                    |
 
 The conflict-case payload is the only TAP tool result NOT tagged `compactable: true` (§3.10.7). It stays in the agent's context until the conflict is acted on, since dropping it would let the agent retry the blocked write without re-grounding.
 
@@ -391,18 +391,18 @@ Adapters MUST call this in `PreToolUse` for every write tool the agent invokes. 
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `targets` | object[] | yes | At least one `{file, hunks?}`. |
-| `ttl_seconds` | int | yes | 1–3600. Re-declare to extend. |
-| `reason` | string | no | Printable ASCII, ≤ 128 chars. |
+| Field         | Type     | Required | Notes                          |
+| ------------- | -------- | -------- | ------------------------------ |
+| `targets`     | object[] | yes      | At least one `{file, hunks?}`. |
+| `ttl_seconds` | int      | yes      | 1–3600. Re-declare to extend.  |
+| `reason`      | string   | no       | Printable ASCII, ≤ 128 chars.  |
 
 #### Output
 
-| Field | Type | Notes |
-|---|---|---|
-| `declaration_id` | string | Opaque, prefix `tap_decl_`. |
-| `expires_at` | timestamp | |
+| Field            | Type      | Notes                       |
+| ---------------- | --------- | --------------------------- |
+| `declaration_id` | string    | Opaque, prefix `tap_decl_`. |
+| `expires_at`     | timestamp |                             |
 
 #### Sandboxing
 
@@ -416,9 +416,9 @@ Not applicable — no peer content.
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `declaration_id` | string | yes | The id returned by `tap_conflict_declare`. |
+| Field            | Type   | Required | Notes                                      |
+| ---------------- | ------ | -------- | ------------------------------------------ |
+| `declaration_id` | string | yes      | The id returned by `tap_conflict_declare`. |
 
 #### Output
 
@@ -432,28 +432,29 @@ Not applicable — no peer content.
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `format` | string | no | `"digest"` (default) or `"full"`. |
+| Field    | Type   | Required | Notes                             |
+| -------- | ------ | -------- | --------------------------------- |
+| `format` | string | no       | `"digest"` (default) or `"full"`. |
 
 #### Output
 
 When `format == "digest"` (default):
 
-| Field | Type | Notes |
-|---|---|---|
-| `count` | int | Total pending notifications. |
+| Field     | Type   | Notes                                                                                                     |
+| --------- | ------ | --------------------------------------------------------------------------------------------------------- |
+| `count`   | int    | Total pending notifications.                                                                              |
 | `summary` | string | Daemon-synthesized one-line-per-item digest, ≤ 30 tokens per item. Each line carries a `notification_id`. |
 
 Example:
-```
+
+```text
 3 pending: 1) src/auth/oauth.rs overlap with samchen (notif_a1b2). 2) Casey released claim on docs/ (notif_c3d4). 3) Migration conflict on db/0042 (notif_e5f6).
 ```
 
 When `format == "full"`:
 
-| Field | Type | Notes |
-|---|---|---|
+| Field           | Type     | Notes                                                                                                                                    |
+| --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `notifications` | object[] | One entry per pending `conflict.notify`. Each carries the wire-method `params` plus a daemon-issued `notification_id` and `received_at`. |
 
 Companion tool **`tap_conflicts_pending_expand`** (read-only): takes a `notification_id` from a digest line and returns the full structured `#ConflictReport`. Cost is paid only for items the agent decides to act on.
@@ -482,17 +483,17 @@ Tools the agent calls to ground itself: who am I, who else is on the team, what 
 
 #### Output
 
-| Field | Type | Notes |
-|---|---|---|
-| `developer_id` | string | §4.1 of the wire spec. |
-| `agent_id` | string | §4.2. |
-| `repo` | string | Canonical repo URL. |
-| `branch` | string | Current branch as known to the daemon. |
-| `awareness_scope` | object | Echo of the scope negotiated at `agent.register`. |
-| `tap_version` | string | Negotiated protocol version. |
-| `daemon_version` | string | The daemon binary's semver. |
-| `tool_surface_version` | string | Per §3.9. |
-| `relay_connected` | bool | False when the daemon is operating local-only. |
+| Field                     | Type      | Notes                                                       |
+| ------------------------- | --------- | ----------------------------------------------------------- |
+| `developer_id`            | string    | §4.1 of the wire spec.                                      |
+| `agent_id`                | string    | §4.2.                                                       |
+| `repo`                    | string    | Canonical repo URL.                                         |
+| `branch`                  | string    | Current branch as known to the daemon.                      |
+| `awareness_scope`         | object    | Echo of the scope negotiated at `agent.register`.           |
+| `tap_version`             | string    | Negotiated protocol version.                                |
+| `daemon_version`          | string    | The daemon binary's semver.                                 |
+| `tool_surface_version`    | string    | Per §3.9.                                                   |
+| `relay_connected`         | bool      | False when the daemon is operating local-only.              |
 | `relay_last_connected_at` | timestamp | Optional. Present after the first successful relay session. |
 
 #### Sandboxing
@@ -507,10 +508,10 @@ Not applicable.
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `format` | string | no | `"summary"` (default) or `"structured"`. |
-| `online_only` | bool | no | Default `false`. When `true`, returns only peers with at least one connected agent. |
+| Field         | Type   | Required | Notes                                                                               |
+| ------------- | ------ | -------- | ----------------------------------------------------------------------------------- |
+| `format`      | string | no       | `"summary"` (default) or `"structured"`.                                            |
+| `online_only` | bool   | no       | Default `false`. When `true`, returns only peers with at least one connected agent. |
 
 #### Output
 
@@ -518,10 +519,10 @@ When `format == "summary"`: `summary: string` plus `peer_count: int`. Bounded �
 
 When `format == "structured"`:
 
-| Field | Type | Notes |
-|---|---|---|
-| `peers` | object[] | Each: `{developer_id, online, agents: [{agent_id, branch, last_heartbeat_at}]}`. |
-| `partial` | bool | True if local-cache only. |
+| Field     | Type     | Notes                                                                            |
+| --------- | -------- | -------------------------------------------------------------------------------- |
+| `peers`   | object[] | Each: `{developer_id, online, agents: [{agent_id, branch, last_heartbeat_at}]}`. |
+| `partial` | bool     | True if local-cache only.                                                        |
 
 #### Sandboxing
 
@@ -539,13 +540,13 @@ Not applicable. Peer identifiers are infrastructure data, not free-text content 
 
 #### Output
 
-| Field | Type | Notes |
-|---|---|---|
-| `repo` | string | Repo the policy applies to. |
-| `messaging` | object | Effective rate-limit and auto-approve config. |
-| `consults` | object | Effective inbound-scope cap, auto-summarize-after-turns. (Phase 4 fields; v0.1 returns conservative defaults.) |
-| `redaction.exclude_files` | string[] | Glob patterns excluded from outbound bundles. |
-| `source_files` | string[] | Paths the daemon merged to produce this view (user-global, per-repo). For introspection only. |
+| Field                     | Type     | Notes                                                                                                          |
+| ------------------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `repo`                    | string   | Repo the policy applies to.                                                                                    |
+| `messaging`               | object   | Effective rate-limit and auto-approve config.                                                                  |
+| `consults`                | object   | Effective inbound-scope cap, auto-summarize-after-turns. (Phase 4 fields; v0.1 returns conservative defaults.) |
+| `redaction.exclude_files` | string[] | Glob patterns excluded from outbound bundles.                                                                  |
+| `source_files`            | string[] | Paths the daemon merged to produce this view (user-global, per-repo). For introspection only.                  |
 
 The full policy DSL is specified in `rfcs/0206-policy-dsl.md` (Phase 4). v0.1 implementations return the conservative subset corresponding to the Phase 1–2 surface.
 
@@ -561,11 +562,11 @@ Not applicable. Policy data is operator-controlled, never peer-controlled.
 
 #### Input
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `format` | string | no | `"summary"` (default) or `"structured"`. |
-| `limit` | int | no | 1–100. Default 20. |
-| `since` | timestamp | no | RFC 3339. Returns only events at or after. |
+| Field    | Type      | Required | Notes                                      |
+| -------- | --------- | -------- | ------------------------------------------ |
+| `format` | string    | no       | `"summary"` (default) or `"structured"`.   |
+| `limit`  | int       | no       | 1–100. Default 20.                         |
+| `since`  | timestamp | no       | RFC 3339. Returns only events at or after. |
 
 #### Output
 
@@ -573,10 +574,10 @@ When `format == "summary"`: `summary: string` plus `event_count: int`. Bounded �
 
 When `format == "structured"`:
 
-| Field | Type | Notes |
-|---|---|---|
-| `events` | object[] | Each: `{kind, occurred_at, developer_id?, agent_id?, branch?, file?, summary}`. `kind` ∈ `{agent_attached, agent_detached, state_changed, conflict_detected, conflict_released}`. |
-| `truncated` | bool | True if more events were available than the limit. |
+| Field       | Type     | Notes                                                                                                                                                                             |
+| ----------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `events`    | object[] | Each: `{kind, occurred_at, developer_id?, agent_id?, branch?, file?, summary}`. `kind` ∈ `{agent_attached, agent_detached, state_changed, conflict_detected, conflict_released}`. |
+| `truncated` | bool     | True if more events were available than the limit.                                                                                                                                |
 
 #### Sandboxing
 
@@ -588,20 +589,20 @@ When `format == "structured"`:
 
 Phase 4 introduces messaging, consults, tasks, trust, and approval gates. The tool surface gains the following names; full specifications live in `rfcs/0201-consults-design.md`, `rfcs/0200-messaging.md`, `rfcs/0203-task-handoff.md`, `rfcs/0204-trust-graph.md`, and `rfcs/0205-approval-gates.md`. Listing them here reserves the names against accidental collision and makes the v1.x evolution path explicit.
 
-| Name | Class | Wire mapping |
-|---|---|---|
-| `tap_message_send` | state-mutating | `msg.send` |
-| `tap_messages_pending` | read-only | (locally maintained from `msg.deliver`) |
-| `tap_consult_request` | state-mutating | `consult.request` |
-| `tap_consult_message` | state-mutating | `consult.message` |
-| `tap_consult_resolve` | state-mutating | `consult.resolve` |
-| `tap_consult_observe` | read-only | `consult.observe` |
-| `tap_consult_pending` | read-only | (locally maintained) |
-| `tap_task_handoff` | state-mutating | `task.handoff` |
-| `tap_task_update` | state-mutating | `task.update` |
-| `tap_trust_grant` | state-mutating | `trust.grant` |
-| `tap_trust_revoke` | state-mutating | `trust.revoke` |
-| `tap_approval_respond` | state-mutating | `approval.respond` |
+| Name                   | Class          | Wire mapping                            |
+| ---------------------- | -------------- | --------------------------------------- |
+| `tap_message_send`     | state-mutating | `msg.send`                              |
+| `tap_messages_pending` | read-only      | (locally maintained from `msg.deliver`) |
+| `tap_consult_request`  | state-mutating | `consult.request`                       |
+| `tap_consult_message`  | state-mutating | `consult.message`                       |
+| `tap_consult_resolve`  | state-mutating | `consult.resolve`                       |
+| `tap_consult_observe`  | read-only      | `consult.observe`                       |
+| `tap_consult_pending`  | read-only      | (locally maintained)                    |
+| `tap_task_handoff`     | state-mutating | `task.handoff`                          |
+| `tap_task_update`      | state-mutating | `task.update`                           |
+| `tap_trust_grant`      | state-mutating | `trust.grant`                           |
+| `tap_trust_revoke`     | state-mutating | `trust.revoke`                          |
+| `tap_approval_respond` | state-mutating | `approval.respond`                      |
 
 All Phase 4 tools that surface peer content (every consult and message tool) carry a non-empty `peer_content_fields` array. Phase 4's adapter conformance tests verify the sandboxing rule against this surface; v0.1 adapters do not implement these tools and simply do not register them.
 
@@ -613,9 +614,9 @@ A context bundle is the package of files, diffs, and references that travels wit
 
 The binding convention:
 
-- **Bundles travel by handle, never inline.** The wire layer uses content-addressing per [`../../project-context.md` §5.2](../../project-context.md#52-storage); the MCP layer surfaces the bundle as a *reference* (`bundle_id`) plus a daemon-synthesized one-paragraph summary (file list, line counts, declared topic). The agent's first turn on a consult sees ≤ 200 tokens of bundle metadata, not the bundle itself.
+- **Bundles travel by handle, never inline.** The wire layer uses content-addressing per [`../../project-context.md` §5.2](../../project-context.md#52-storage); the MCP layer surfaces the bundle as a _reference_ (`bundle_id`) plus a daemon-synthesized one-paragraph summary (file list, line counts, declared topic). The agent's first turn on a consult sees ≤ 200 tokens of bundle metadata, not the bundle itself.
 - **Lazy fetch via companion tool.** A `tap_consult_bundle_get(bundle_id, file_path)` companion tool returns a single file's content on demand. The agent calls it only when it has decided that file is relevant to its reasoning. Cost is paid per-file fetched, not per-bundle received.
-- **Manifest is cheap, contents are not.** A `tap_consult_bundle_manifest(bundle_id)` companion returns the list of files and line counts without contents. Bounded to ≤ 300 tokens. Lets the agent decide *which* files to fetch before paying for any.
+- **Manifest is cheap, contents are not.** A `tap_consult_bundle_manifest(bundle_id)` companion returns the list of files and line counts without contents. Bounded to ≤ 300 tokens. Lets the agent decide _which_ files to fetch before paying for any.
 - **Daemon-side scope enforcement.** Per-consult derived keys plus relay-enforced ACLs mean a `bundle_get` call is authorized only for bundles addressed to the recipient. An attacker who guesses a `bundle_id` cannot read it.
 - **Same pattern for messaging.** `msg.send` payloads above a small inline threshold (proposed: 1 KB) use the same handle pattern; small payloads inline as before.
 
@@ -712,14 +713,14 @@ The compatibility contract between adapter, daemon, and wire protocol is then:
 
 This is the per-RFC STRIDE delta required by [`../RFC_PROCESS.md`](../RFC_PROCESS.md) §3.3. The phase-level addendum (Phase 2's `threat-model.md`) folds these in.
 
-| Category | Threat | Control |
-|---|---|---|
-| Spoofing | Foreign-UID process connects to socket. | UID check + `0700` permissions. |
-| Tampering | Adapter alters wire content before forwarding. | Daemon validates inputs against the wire-protocol schema; outputs are validated by the daemon before reply. |
-| Repudiation | Agent denies invoking a state-mutating tool. | Daemon logs every tool call with trace ID propagated to the wire protocol; audit chain (Phase 4) captures the upstream wire frame. |
-| Information disclosure | Sandboxing contract violated by adapter. | `peer_content_fields` declaration + adapter conformance tests. |
-| Denial of service | Pathological tool call rate. | Per-tool rate limits (Phase 2 daemon RFC). |
-| Elevation of privilege | Tool that should be `state_mutating` classified as `read_only`, bypassing hook gates. | Side-effect class is part of the tool descriptor; CI verifies `class` against the wire-protocol method's effect. |
+| Category               | Threat                                                                                | Control                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Spoofing               | Foreign-UID process connects to socket.                                               | UID check + `0700` permissions.                                                                                                    |
+| Tampering              | Adapter alters wire content before forwarding.                                        | Daemon validates inputs against the wire-protocol schema; outputs are validated by the daemon before reply.                        |
+| Repudiation            | Agent denies invoking a state-mutating tool.                                          | Daemon logs every tool call with trace ID propagated to the wire protocol; audit chain (Phase 4) captures the upstream wire frame. |
+| Information disclosure | Sandboxing contract violated by adapter.                                              | `peer_content_fields` declaration + adapter conformance tests.                                                                     |
+| Denial of service      | Pathological tool call rate.                                                          | Per-tool rate limits (Phase 2 daemon RFC).                                                                                         |
+| Elevation of privilege | Tool that should be `state_mutating` classified as `read_only`, bypassing hook gates. | Side-effect class is part of the tool descriptor; CI verifies `class` against the wire-protocol method's effect.                   |
 
 ---
 

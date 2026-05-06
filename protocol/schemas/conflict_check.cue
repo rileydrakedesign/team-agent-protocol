@@ -7,12 +7,13 @@
 package schemas
 
 import "list"
+
 // Single intended-write target. file is required; hunks is optional. When
 // hunks is absent, the daemon is asking "is anyone else touching this file at
 // all" (Level 1). When hunks is present, the daemon is asking for hunk-level
 // (Level 2) and semantic (Level 3) checks too.
 #IntendedWrite: {
-	file:   #FilePath
+	file: #FilePath
 	hunks?: [...#Hunk]
 }
 

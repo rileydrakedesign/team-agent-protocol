@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: continuing
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 rfc_number: NNNN
 title: "Short imperative title"
@@ -30,18 +30,21 @@ Be specific. Quantify where possible. Cite [`../GLOSSARY.md`](../GLOSSARY.md) te
 The proposal itself. Concrete enough that an engineer can implement from it.
 
 For protocol changes, include:
+
 - New CUE schema definitions (or links to PRs).
 - New method names and field tables.
 - New error codes and their allocation.
 - New conformance fixtures (or a list of fixtures to add).
 
 For component changes, include:
+
 - The interface contract.
 - Data model.
 - Algorithms (pseudocode or described procedurally).
 - Performance budget impact, with numbers.
 
 For documentation or process changes, include:
+
 - The new convention.
 - The migration path for existing artifacts.
 - The CI enforcement strategy, if any.

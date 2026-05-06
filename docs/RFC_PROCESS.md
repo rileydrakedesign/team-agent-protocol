@@ -1,8 +1,8 @@
 ---
 status: accepted
 phase: continuing
-owners: [@rileydrakedesign]
-last-reviewed: 2026-04-29
+owners: ["@rileydrakedesign"]
+last-reviewed: 2026-05-04
 ---
 
 # TAP RFC Process
@@ -38,7 +38,7 @@ When in doubt, ask in an issue first. Cheaper to clarify than to discard.
 
 ## 2. Lifecycle
 
-```
+```text
                 ┌────────────┐
                 │   Draft    │   author writes; not yet open for review
                 └─────┬──────┘
@@ -108,14 +108,14 @@ Every RFC MUST carry the front-matter block from [`README.md`](README.md). Addit
 ---
 status: draft | discussion | fcp | accepted | implemented | superseded | withdrawn
 phase: 1 | 2 | 3 | 4 | 5 | 6 | continuing
-owners: [@github-handle]
+owners: ["@github-handle"]
 last-reviewed: 2026-04-29
 rfc_number: 0015
 title: "MCP tool surface"
-discussion_pr: "https://github.com/.../pull/N"  # filled in when PR opens
-implementation_tracking: ["#N", "#M"]            # filled in on acceptance
-supersedes: rfcs/NNNN-old.md                     # if applicable
-superseded_by: rfcs/NNNN-new.md                  # filled in if/when superseded
+discussion_pr: "https://github.com/.../pull/N" # filled in when PR opens
+implementation_tracking: ["#N", "#M"] # filled in on acceptance
+supersedes: rfcs/NNNN-old.md # if applicable
+superseded_by: rfcs/NNNN-new.md # filled in if/when superseded
 ---
 ```
 
@@ -171,15 +171,15 @@ Superseded RFCs are kept in place. Do not delete.
 
 Allocation by phase per [`DOCUMENTATION_PLAN.md`](DOCUMENTATION_PLAN.md) §5:
 
-| Range | Phase |
-|---|---|
-| 0000 | Template |
-| 0001–0009 | Phase 1 |
-| 0010–0099 | Phase 2 |
-| 0100–0199 | Phase 3 |
-| 0200–0299 | Phase 4 |
-| 0300–0399 | Phase 5 |
-| 0400–0499 | Phase 6 |
+| Range     | Phase               |
+| --------- | ------------------- |
+| 0000      | Template            |
+| 0001–0009 | Phase 1             |
+| 0010–0099 | Phase 2             |
+| 0100–0199 | Phase 3             |
+| 0200–0299 | Phase 4             |
+| 0300–0399 | Phase 5             |
+| 0400–0499 | Phase 6             |
 | 0900–0999 | Continuing concerns |
 
 If a range is exhausted, allocate the next adjacent unused range and update [`DOCUMENTATION_PLAN.md`](DOCUMENTATION_PLAN.md) and this document in the same RFC.

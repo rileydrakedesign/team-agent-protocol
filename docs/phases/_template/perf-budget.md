@@ -1,7 +1,7 @@
 ---
 status: draft
 phase: N
-owners: [@your-github-handle]
+owners: ["@your-github-handle"]
 last-reviewed: YYYY-MM-DD
 ---
 
@@ -18,8 +18,8 @@ A phase cannot exit if any budget here is unmet.
 For each operation introduced or affected by this phase, a budget. Latency at P50 and P95; memory ceiling; throughput floor where applicable.
 
 | Operation | P50 | P95 | Memory | Throughput | Notes |
-|---|---|---|---|---|---|
-| … | … | … | … | … | … |
+| --------- | --- | --- | ------ | ---------- | ----- |
+| …         | …   | …   | …      | …          | …     |
 
 Cross-reference each operation to its SLO ancestor. Tightening the budget is allowed; loosening it requires a decision-log entry and an update to [`../../../project-context.md` §3.3](../../../project-context.md#33-service-level-objectives) if applicable.
 
@@ -30,8 +30,8 @@ Cross-reference each operation to its SLO ancestor. Tightening the budget is all
 Steady-state resource use of components introduced this phase.
 
 | Component | CPU (steady) | Memory (steady) | Disk | Network |
-|---|---|---|---|---|
-| … | … | … | … | … |
+| --------- | ------------ | --------------- | ---- | ------- |
+| …         | …            | …               | …    | …       |
 
 ---
 
@@ -40,6 +40,7 @@ Steady-state resource use of components introduced this phase.
 For end-to-end SLOs, decompose into per-hop budgets so component owners know what their share is.
 
 > Example (Phase 3 cross-developer conflict check):
+>
 > - Originating daemon local cache lookup: 5 ms
 > - Daemon → relay WSS round-trip: 30 ms
 > - Relay routing + state lookup: 20 ms

@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 package(default_visibility = ["//visibility:public"])
 
 # Driver script. Invoked via `bazel run //tools/codegen:generate`.
@@ -24,5 +27,8 @@ sh_test(
         ":generate",
         "//protocol/schemas:cue_schemas",
     ],
-    tags = ["requires-network", "manual"],
+    tags = [
+        "manual",
+        "requires-network",
+    ],
 )

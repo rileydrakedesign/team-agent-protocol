@@ -8,6 +8,7 @@
 package schemas
 
 import "list"
+
 #ConflictDeclareParams: {
 	developer_id: #DeveloperId
 	agent_id:     #AgentId
