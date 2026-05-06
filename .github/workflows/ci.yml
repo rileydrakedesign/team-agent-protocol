@@ -75,7 +75,7 @@ jobs:
           version: 9.12.0
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20.18"
           cache: pnpm
@@ -126,7 +126,7 @@ jobs:
         run: pip install pyyaml
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20.18"
 
@@ -191,7 +191,7 @@ jobs:
           version: 9.12.0
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20.18"
           cache: pnpm
