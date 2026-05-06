@@ -149,7 +149,7 @@ jobs:
         run: python tools/doclint/doclint.py --dashboard > doc-dashboard.md
 
       - name: Upload doc dashboard
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: doc-dashboard
           path: doc-dashboard.md
